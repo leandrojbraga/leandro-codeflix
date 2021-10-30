@@ -10,4 +10,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    protected $simpleValidationRules = [
+        'name' => 'required|max:255',
+        'is_active' => 'boolean'
+    ];
 }

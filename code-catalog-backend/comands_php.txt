@@ -1,0 +1,24 @@
+#Criar modelo
+php artisan make:model Models/Genre --all
+
+
+# Criar seeder
+php artisan make:seeder GenresSeeder
+
+
+# Criar request validate
+php artisan make:request CategoryRequest
+
+#Listar rotas
+php artisan route:list
+
+
+# Migrate
+## Criar
+php artisan migrate --seed
+
+## Executa os rollback e recriar migração
+php artisan migrate:refresh --seed
+
+##Apaga todo o banco e roda a migração 
+php artisan migrate:fresh --seed

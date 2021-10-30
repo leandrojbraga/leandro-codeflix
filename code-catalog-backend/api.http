@@ -2,34 +2,72 @@
 GET http://localhost:8000/api/categories/
 
 ###
-GET http://localhost:8000/api/categories/0
+GET http://localhost:8000/api/categories/3
 Accept: application/json
 
 
 ###
-POST http://localhost:3000/products
+POST http://localhost:8000/api/categories/
 Content-type: application/json
+Accept: application/json
 
 {
-    "name": "outro produto",
-    "price": 8.99
+    "name": "Categoria inativa 3",
+    "description": "outra categoria foi desativada 1"
 }
 
 
 
 # PUT (Completa) vs PATCH (Parcial)
 ###
-PATCH http://localhost:3000/products/4
+PUT http://localhost:8000/api/categories/4
 Content-type: application/json
+Accept: application/json
 
 {
-    "name": "Pão de queijo",
-    "price": 9.99
+    "name": "DimGray",
+    "is_active": false
 }
 
 ###
-DELETE http://localhost:3000/products/3
+DELETE http://localhost:8000/api/categories/3
+Accept: application/json
 
 # PUT (Completa) vs PATCH (Parcial)
 # 200 OK
 # 201 Created
+
+
+###
+GET http://localhost:8000/api/genres/
+
+###
+GET http://localhost:8000/api/genres/03bb825b-5cff-43b6-8250-56bb2a002f9a
+Accept: application/json
+
+
+###
+POST http://localhost:8000/api/genres/
+Content-type: application/json
+Accept: application/json
+
+{
+    "name": "Terror"
+}
+
+
+
+# PUT (Completa) vs PATCH (Parcial)
+###
+PUT http://localhost:8000/api/genres/03bb825b-5cff-43b6-8250-56bb2a002f9a
+Content-type: application/json
+Accept: application/json
+
+{
+    "name": "Drama",
+    "is_active": false
+}
+
+###
+DELETE http://localhost:8000/api/genres/03bb825b-5cff-43b6-8250-56bb2a002f9a
+Accept: application/json
