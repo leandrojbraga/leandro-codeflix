@@ -42,7 +42,7 @@ Accept: application/json
 GET http://localhost:8000/api/genres/
 
 ###
-GET http://localhost:8000/api/genres/03bb825b-5cff-43b6-8250-56bb2a002f9a
+GET http://localhost:8000/api/genres/00736f68-c5f1-42fb-bc16-0690d409afc7
 Accept: application/json
 
 

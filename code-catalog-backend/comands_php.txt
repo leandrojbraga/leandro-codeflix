@@ -22,3 +22,16 @@ php artisan migrate:refresh --seed
 
 ##Apaga todo o banco e roda a migração 
 php artisan migrate:fresh --seed
+
+
+# Criar teste unitário
+php artisan make:test CategoryTest --unit
+
+# Executar testes
+vendor/bin/phpunit
+
+# Executar teste especifico
+vendor/bin/phpunit --filter CategoryTest
+
+# Executar teste de método especifico
+vendor/bin/phpunit --filter CategoryTest::testFillableFields
