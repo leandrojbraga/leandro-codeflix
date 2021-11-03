@@ -15,6 +15,9 @@ class Category extends Model
     protected $keyType = 'string';
     protected $fillable = ['name', 'description', 'is_active'];
     protected $dates = ['deleted_at'];
+    protected $casts = [
+        'is_active' => 'boolean'
+    ];
     
 }
 
