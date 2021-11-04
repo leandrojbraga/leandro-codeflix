@@ -16,5 +16,5 @@ yarn-error.log
 .vscode/
 .history/
 .devcontainer/
-.http
-.txt
+app.http
+comands_php.txt

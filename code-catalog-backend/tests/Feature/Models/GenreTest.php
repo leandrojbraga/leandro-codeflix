@@ -46,6 +46,13 @@ class GenreTest extends TestModel
             ]
         );
 
+        // Validate id is a Uuid4
+        $this->validateIdisUuid4(
+            [
+                'name' => $name
+            ]
+        );
+
         // Validate is_active false
         $this->validateCreate(
             [

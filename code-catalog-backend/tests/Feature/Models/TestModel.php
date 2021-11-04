@@ -5,6 +5,7 @@ namespace Tests\Feature\Models;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 
 class TestModel extends TestCase
@@ -37,6 +38,17 @@ class TestModel extends TestCase
         foreach ($fieldsValidade as $key => $value) {
             $this->assertEquals($value, $model->{$key});
         }
+    }
+
+    public function validateIdisUuid4($data) {        
+        $model = $this->table::create($data);
+        $model->refresh();
+
+        $this->assertTrue(Uuid::isValid($model->id));
+        $this->assertEquals(
+            Uuid::fromString($model->id)->getVersion(), 
+            Uuid::UUID_TYPE_RANDOM
+        );
     }
 
     public function validateEdit($oldData, $newData) {        

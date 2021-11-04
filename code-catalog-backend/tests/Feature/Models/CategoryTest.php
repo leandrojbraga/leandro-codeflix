@@ -52,6 +52,13 @@ class CategoryTest extends TestModel
             ]
         );
 
+        // Validate id is a Uuid4
+        $this->validateIdisUuid4(
+            [
+                'name' => $name
+            ]
+        );
+
         // Validate description null
         $this->validateCreate(
             [
