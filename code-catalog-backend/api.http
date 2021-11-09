@@ -59,15 +59,15 @@ Accept: application/json
 
 # PUT (Completa) vs PATCH (Parcial)
 ###
-PUT http://localhost:8000/api/genres/03bb825b-5cff-43b6-8250-56bb2a002f9a
+PUT http://localhost:8000/api/genres/d8d7e510-5ff4-4a7b-9c1a-94f7fa3c9cb9
 Content-type: application/json
 Accept: application/json
 
 {
     "name": "Drama",
-    "is_active": false
+    "is_active": "C"
 }
 
 ###
-DELETE http://localhost:8000/api/genres/03bb825b-5cff-43b6-8250-56bb2a002f9a
+DELETE http://localhost:8000/api/genres/ff951464-9f69-4de8-9c30-0e80e72c0d63
 Accept: application/json

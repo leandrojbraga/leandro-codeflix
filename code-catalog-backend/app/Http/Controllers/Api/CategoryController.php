@@ -21,7 +21,9 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, $this->simpleValidationRules);
-        return Category::create($request->all());
+        $category = Category::create($request->all());
+        $category->refresh();
+        return $category;
     }
 
     // Display the specified resource.

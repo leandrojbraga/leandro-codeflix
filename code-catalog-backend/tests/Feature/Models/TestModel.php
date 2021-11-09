@@ -31,22 +31,23 @@ class TestModel extends TestCase
         $this->assertEqualsCanonicalizing($attributes, $modelAttrs);
     }
 
-    public function validateCreate($data, $fieldsValidade) {        
+    public function validateCreate($data, $fieldsValidade, $validateId = False) {        
         $model = $this->table::create($data);
         $model->refresh();
 
         foreach ($fieldsValidade as $key => $value) {
             $this->assertEquals($value, $model->{$key});
         }
+        
+        if ($validateId) {
+            $this->validateIdisUuid4($model->id);
+        }
     }
 
-    public function validateIdisUuid4($data) {        
-        $model = $this->table::create($data);
-        $model->refresh();
-
-        $this->assertTrue(Uuid::isValid($model->id));
+    public function validateIdisUuid4($id) {        
+        $this->assertTrue(Uuid::isValid($id));
         $this->assertEquals(
-            Uuid::fromString($model->id)->getVersion(), 
+            Uuid::fromString($id)->getVersion(), 
             Uuid::UUID_TYPE_RANDOM
         );
     }
@@ -69,12 +70,15 @@ class TestModel extends TestCase
 
         $modelToDelete = $this->table::find($modelId);
         $deleted = $modelToDelete->delete();
-
         $this->assertTrue($deleted);
+        
+        $this->assertNull($this->table::find($modelToDelete->id));
 
-        $modelDeleted = $this->table::onlyTrashed()->find($modelId);
+        $this->assertNotNull($this->table::onlyTrashed()->find($modelToDelete->id));
 
-        $this->assertEquals($modelId, $modelDeleted->id);
+        $modelToDelete->restore();
+        $this->assertNotNull($this->table::find($modelToDelete->id));
+
     }
     
 }

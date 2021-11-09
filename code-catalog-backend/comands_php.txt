@@ -36,4 +36,4 @@ vendor/bin/phpunit --filter CategoryTest
 # Executar teste de método especifico
 vendor/bin/phpunit --filter CategoryTest::testFillableFields
 
-vendor/bin/phpunit CategoryTest tests/Feature/Models/CategoryTest.php --filter testCreate
+vendor/bin/phpunit CategoryTest tests/Feature/Models/CategoryTest.php --filter testSoftDelete

@@ -49,14 +49,8 @@ class CategoryTest extends TestModel
                 'name' => $name,
                 'description' => null,
                 'is_active' => true
-            ]
-        );
-
-        // Validate id is a Uuid4
-        $this->validateIdisUuid4(
-            [
-                'name' => $name
-            ]
+            ],
+            true
         );
 
         // Validate description null
