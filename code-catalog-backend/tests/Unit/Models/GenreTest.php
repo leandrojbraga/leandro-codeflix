@@ -5,57 +5,45 @@ namespace Tests\Unit\Models;
 use App\Models\Genre;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PHPUnit\Framework\TestCase;
+use Tests\Traits\UnitModelsValidations;
 
-
-class GenreTest extends TestModel
+class GenreTest extends TestCase
 {
-   
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->model = new Genre();
+    use UnitModelsValidations;
+
+    protected function getModel() {
+        return (new Genre());
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-    }
-    
-    /**
-     * A basic unit test example.
-     *
-     * @return void
-     */
     public function testFillableAttributes() {        
-        $this->validateFillableAttributes(
+        $this->assertFillableAttributes(
             ['name', 'is_active']
         );
     }
 
     public function testDatesAttributes() {   
-        $this->validateDatesAttributes(
+        $this->assertDatesAttributes(
             ['deleted_at', 'created_at', 'updated_at']
         );
     }
 
     public function testTypeKey() {
-        $this->validateTypeKey(
-            'string'
-        );
+        $this->assertTypeKey('string');
     }
 
     public function testIncrementing() {
-        $this->validateIncrementingFalse();
+        $this->assertIncrementingFalse();
     }
 
     public function testCastsAttributes() {
-        $this->validateCastsAttributes(
+        $this->assertCastsAttributes(
             ['is_active']
         );
     }
 
     public function testUseAllTraits() {
-        $this->validateUseAllTraits(
+        $this->assertUseAllTraits(
             [ SoftDeletes::class, Uuid::class]
         );
     }

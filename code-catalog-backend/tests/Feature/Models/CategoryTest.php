@@ -3,32 +3,26 @@
 namespace Tests\Feature\Models;
 
 use App\Models\Category;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Tests\TestCase;
+use Tests\Traits\FeatureModelsValidations;
 
-class CategoryTest extends TestModel
+class CategoryTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->table = Category::class;
+    use DatabaseMigrations, FeatureModelsValidations;
+
+    protected function getModel() {
+       return Category::class;
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-    }
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
     public function testList()
     {   
-        $this->validateList();
+        $this->assertList();
     }
 
     public function testAllAttributes()
     {   
-        $this->validateAllAttributes(
+        $this->assertAttributes(
             [
                 'id', 'name', 'description', 'is_active',
                 'created_at', 'updated_at', 'deleted_at'
@@ -41,65 +35,52 @@ class CategoryTest extends TestModel
         $description = 'Category test description';
                 
         // Validate a default create
-        $this->validateCreate(
-            [
-                'name' => $name
-            ],
-            [   
-                'name' => $name,
+        $data = [ 'name' => $name ];
+        $this->assertCreate(
+            $data,
+            $data + [
                 'description' => null,
                 'is_active' => true
             ],
             true
         );
 
-        // Validate description null
-        $this->validateCreate(
-            [
-                'name' => $name,
-                'description' => null,
-            ],
-            [   
-                'description' => null
-            ]
+        //Validate id is Uuid4
+        $this->assertIdIsUuid4(
+            $this->getModelCreated($data)->id
         );
+
+        // Validate description null
+        $data = [
+            'name' => $name,
+            'description' => null,
+        ];
+        $this->assertCreate($data, $data);
 
         // Validate description NOT null
-        $this->validateCreate(
-            [
-                'name' => $name,
-                'description' => $description
-            ],
-            [   
-                'description' => $description
-            ]
-        );
+        $data = [
+            'name' => $name,
+            'description' => $description
+        ];
+        $this->assertCreate($data, $data);
 
         // Validate is_active false
-        $this->validateCreate(
-            [
-                'name' => $name,
-                'is_active' => false
-            ],
-            [   
-                'is_active' => false
-            ]
-        );
+        $data = [
+            'name' => $name,
+            'is_active' => false
+        ];
+        $this->assertCreate($data, $data);
 
         // Validate is_active true
-        $this->validateCreate(
-            [
-                'name' => $name,
-                'is_active' => true
-            ],
-            [   
-                'is_active' => true
-            ]
-        );
+        $data = [
+            'name' => $name,
+            'is_active' => true
+        ];
+        $this->assertCreate($data, $data);
     }
     
     public function testEdit() {
-        $this->validateEdit(
+        $this->assertEdit(
             [
                 'name' => 'Category old',
                 'description' => 'Category old description',
@@ -114,12 +95,12 @@ class CategoryTest extends TestModel
     }
 
     public function testSoftDelete() {
-        $this->validateSoftDelete(
-            [
-                'name' => 'Category',
-                'description' => 'Category description',
-                'is_active' => false
-            ]
-        );
+        $modelCreated = $this->getModelCreated([
+            'name' => 'Category',
+            'description' => 'Category description',
+            'is_active' => false
+        ]);
+
+        $this->assertSoftDelete($modelCreated->id);
     }
 }

@@ -3,28 +3,26 @@
 namespace Tests\Feature\Models;
 
 use App\Models\Genre;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Tests\TestCase;
+use Tests\Traits\FeatureModelsValidations;
 
-class GenreTest extends TestModel
+class GenreTest extends TestCase
 {   
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->table = Genre::class;
-    }
+    use DatabaseMigrations, FeatureModelsValidations;
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
+    protected function getModel() {
+       return Genre::class;
     }
 
     public function testList()
     {   
-        $this->validateList();
+        $this->assertList();
     }
 
     public function testAllAttributes()
     {   
-        $this->validateAllAttributes(
+        $this->assertAttributes(
             [
                 'id', 'name', 'is_active',
                 'created_at', 'updated_at', 'deleted_at'
@@ -33,62 +31,57 @@ class GenreTest extends TestModel
     }
 
     public function testCreate() {
-        $name = 'Genre Test';
-        
+        $name = 'Category Test';
+                
         // Validate a default create
-        $this->validateCreate(
-            [
-                'name' => $name
-            ],
-            [
-                'name' => $name,
+        $data = [ 'name' => $name ];
+        $this->assertCreate(
+            $data,
+            $data + [
                 'is_active' => true
             ],
             true
         );
 
-        // Validate is_active false
-        $this->validateCreate(
-            [
-                'name' => $name,
-                'is_active' => false
-            ],
-            [   
-                'is_active' => false
-            ]
+        //Validate id is Uuid4
+        $this->assertIdIsUuid4(
+            $this->getModelCreated($data)->id
         );
 
+        // Validate is_active false
+        $data = [
+            'name' => $name,
+            'is_active' => false
+        ];
+        $this->assertCreate($data, $data);
+
         // Validate is_active true
-        $this->validateCreate(
-            [
-                'name' => $name,
-                'is_active' => true
-            ],
-            [   
-                'is_active' => true
-            ]
-        );
+        $data = [
+            'name' => $name,
+            'is_active' => true
+        ];
+        $this->assertCreate($data, $data);
     }
     
     public function testEdit() {
-        $this->validateEdit(
+        $this->assertEdit(
             [
-                'name' => 'Genre old',
+                'name' => 'Category old',
                 'is_active' => false
             ],
             [
-                'name' => 'Genre edited',
+                'name' => 'Category edited',
                 'is_active' => true
             ]
         );
     }
-    
+
     public function testSoftDelete() {
-        $this->validateSoftDelete(
-            [
-                'name' => 'Genre',
-                'is_active' => false
-            ]
-        );
+        $modelCreated = $this->getModelCreated([
+            'name' => 'Category',
+            'is_active' => false
+        ]);
+
+        $this->assertSoftDelete($modelCreated->id);
     }
 }

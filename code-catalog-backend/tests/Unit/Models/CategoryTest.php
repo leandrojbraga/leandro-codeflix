@@ -5,57 +5,48 @@ namespace Tests\Unit\Models;
 use App\Models\Category;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PHPUnit\Framework\TestCase;
+use Tests\Traits\UnitModelsValidations;
 
-
-class CategoryTest extends TestModel
+class CategoryTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->model = new Category();
+    use UnitModelsValidations;
+
+    protected function getModel() {
+        return (new Category());
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-    }
-
-    /**
-     * A basic unit test example.
-     *
-     * @return void
-     */
     public function testFillableAttributes() {        
-        $this->validateFillableAttributes(
+        $this->assertFillableAttributes(
             ['name', 'description', 'is_active']
         );
     }
 
     public function testDatesAttributes() {   
-        $this->validateDatesAttributes(
+        $this->assertDatesAttributes(
             ['deleted_at', 'created_at', 'updated_at']
         );
     }
 
     public function testTypeKey() {
-        $this->validateTypeKey(
+        $this->assertTypeKey(
             'string'
         );
     }
 
     public function testIncrementing() {
-        $this->validateIncrementingFalse();
+        $this->assertIncrementingFalse();
     }
 
     public function testCastsAttributes() {
-        $this->validateCastsAttributes(
+        $this->assertCastsAttributes(
             ['is_active']
         );
     }
 
     public function testUseAllTraits() {
-        $this->validateUseAllTraits(
-            [ SoftDeletes::class, Uuid::class]
+        $this->assertUseAllTraits(
+            [ SoftDeletes::class, Uuid::class ]
         );
     }
 }

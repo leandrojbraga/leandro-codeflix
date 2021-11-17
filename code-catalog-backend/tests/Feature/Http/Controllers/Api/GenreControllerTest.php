@@ -3,112 +3,108 @@
 namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\Genre;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Lang;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Tests\TestCase;
+use Tests\Traits\FeatureHttpValidations;
 
-class GenreControllerTest extends TestController
-{   
-    private $routePrefix = "genres";
+class GenreControllerTest extends TestCase
+{ 
+
+    use DatabaseMigrations, FeatureHttpValidations;
+    
+    private $factoryModel;
+    private $route;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->class = Genre::class;
-        $this->model = factory($this->class)->create();
+        $this->factoryCreateModel();
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
+    protected function getModel() {
+        return Genre::class;
+    }
+
+    protected function factoryCreateModel() {
+        $model = $this->getModel();
+        $this->factoryModel = factory($model)->create();
+    }
+
+    protected function setRoute(string $routeSuffix, array $params = []) {
+        $routePrefix = "genres";
+        $this->route = route($routePrefix.'.'.$routeSuffix, $params);
+    }
+
+    protected function getRoute() {
+        return $this->route;
+    }
+
+    protected function getFactoryModel() {
+        return $this->factoryModel;
     }
 
     public function testIndex()
-    {
-        $this->validateIndex(
-            route($this->routePrefix.'.index')
-        );
+    {   
+        $this->setRoute('index');
+        $this->assertIndex();
     }
 
     public function testShow()
-    {
-        $this->validateShow(
-            route(
-                $this->routePrefix.'.show',
-                ['genre' => $this->model->id]
-            )
-        );
+    {   
+        $this->setRoute('show', ['genre' => $this->getFactoryModel()->id]);
+        $this->assertShow();
 
-        $this->validateShowNotFound(
-            route(
-                $this->routePrefix.'.show',
-                ['genre' => 0]
-            )
-        );
+        $this->setRoute('show', ['genre' => 0]);
+        $this->assertShowNotFound();
     }
-
+    
     public function testInvalidationData()
     {   
         // Test create
-        $this->assertInvalidationData(
-            'POST',
-            route($this->routePrefix.'.store')
-        );
+        $this->setRoute('store');
+        $this->assertInvalidationDataByAttribute('POST');
 
         // Test update
-        $this->assertInvalidationData(
-            'PUT',
-            route($this->routePrefix.'.update', ['genre' => $this->model->id])
-        );
+        $this->setRoute('update', ['genre' => $this->getFactoryModel()->id]);
+        $this->assertInvalidationDataByAttribute('PUT');
     }
-    public function assertInvalidationData($method, $route)
+
+    public function assertInvalidationDataByAttribute($method)
     {   
-        // Validate name required
-        $requiredAttributes = ['name'];
-        
-        foreach ($requiredAttributes as $attribute) {
-            $this->validateInvalidationData(
-                $method,
-                $route,
-                [],
-                [ $attribute ],
-                [ Lang::get('validation.required', ['attribute' => $attribute]) ]
-            );
-        }
-
-        // Validate name max length
-        $validateAttributes = collect([
-            'name' => (object)[
-                'content' => ['name' => str_repeat('C', 256)],
-                'error' => 'validation.max.string',
-                'msgReplace' => [
-                        'attribute' => 'name',
-                        'max' => 255
-                    ]
-                ],
-            'is_active' => (object)[
+        $validateAttributes = [
+            [   'attribute' => 'name',
+                'content' => [],
+                'validation' => [
+                    'key' => 'required',
+                    'replace' => []
+                ]
+            ],
+            [   'attribute' => 'name',
+                'content' => ['name' => str_repeat('G', 256)],
+                'validation' => [
+                    'key' => 'max.string',
+                    'replace' => [ 'max' => 255 ]
+                ]
+            ],
+            [   'attribute' => 'is_active',
                 'content' => ['name' => 'Genre', 'is_active' => 'C'],
-                'error' => 'validation.boolean',
-                'msgReplace' => [
-                        'attribute' => 'is active'
-                    ]
-                ],
-        ]);
-
-        foreach($validateAttributes as $key => $lang) {
-            $this->validateInvalidationData(
+                'validation' => [
+                    'key' => 'boolean',
+                    'replace' => []
+                ]
+            ]
+        ];
+        foreach($validateAttributes as $validateAttribute) {
+            $this->assertInvalidationData(
                 $method,
-                $route,
-                $lang->content,
-                [ $key ],
-                [ Lang::get($lang->error, $lang->msgReplace)]
+                $validateAttribute['content'],
+                $validateAttribute['attribute'],
+                (object) $validateAttribute['validation']
             );
         }
 
-        // Validate not required attributes missing validation errors 
-        $this->validateInvalidationDataNotRequired(
+        $this->assertMissingValidationDataNotRequired(
             $method,
-            $route,
             [],
             ['is_active']
         );
@@ -117,49 +113,42 @@ class GenreControllerTest extends TestController
     public function testStore()
     {
         $name = 'Genre Test';
-                
-        // Validate a default create          
-        $this->validateStore(
-            route($this->routePrefix.'.store'),
-            [
-                'name' => $name
-            ],
-            [   
-                'name' => $name,
+        
+        $this->setRoute('store');
+
+        // Validate a default create
+        $data = [ 'name' => $name ];
+        $this->assertStore(
+            $data,
+            $data + [
                 'is_active' => true
             ],
             true
         );
 
+        //Validate id is Uuid4
+        $this->assertIdIsUuid4($this->getRequestId());
+
         // Validate is_active false
-        $this->validateStore(
-            route($this->routePrefix.'.store'),
-            [
-                'name' => $name,
-                'is_active' => false
-            ],
-            [   
-                'is_active' => false
-            ]
-        );
+        $data = [
+            'name' => $name,
+            'is_active' => false
+        ];
+        $this->assertStore($data, $data);
 
         // Validate is_active true
-        $this->validateStore(
-            route($this->routePrefix.'.store'),
-            [
-                'name' => $name,
-                'is_active' => true
-            ],
-            [   
-                'is_active' => true
-            ]
-        );
+        $data = [
+            'name' => $name,
+            'is_active' => true
+        ];
+        $this->assertStore($data, $data);
     }
-
+    
     public function testUpdate()
-    {     
-        $this->validateUpdate(
-            route($this->routePrefix.'.update', ['genre' => $this->model->id]),
+    {
+        $this->setRoute('update', ['genre' => $this->getFactoryModel()->id]);
+
+        $this->assertUpdate(
             [   
                 'name' => 'Genre Test',
                 'is_active' => false
@@ -168,10 +157,9 @@ class GenreControllerTest extends TestController
     }
 
     public function testDestroy()
-    {     
-        $this->validateDestroy(
-            route($this->routePrefix.'.destroy', ['genre' => $this->model->id])
-        );
+    {
+        $this->setRoute('destroy', ['genre' => $this->getFactoryModel()->id]);
+        $this->assertDestroy();
     }
     
 }
