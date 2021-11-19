@@ -1,6 +1,6 @@
 steps:
 
-    -   id: "Rodando docker-compose"
+    -   id: "rodando-docker-compose"
         name: 'docker/compose'
         args: ['-f','code-catalog-backend/docker-compose.prod.yaml','up','-d']
 
@@ -27,7 +27,7 @@ steps:
     -   id: "db mysql"
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','db','ls','var/lib/mysql/']
-        waitFor: ['Rodando docker-compose']
+        waitFor: ['rodando-docker-compose']
 
     -   id: "Rodando migrations"
         name: 'gcr.io/cloud-builders/docker'
