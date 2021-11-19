@@ -32,7 +32,7 @@ steps:
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','db','ls','var/lib/mysql/']
     
-    -   id: "db mysql"
+    -   id: "docker ps"
         name: 'gcr.io/cloud-builders/docker'
         args: ['ps']
 
