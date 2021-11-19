@@ -24,10 +24,18 @@ steps:
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','app','php','/var/www/artisan','key:generate']
 
+    -   id: "sleep db mysql"
+        name: 'gcr.io/cloud-builders/docker'
+        args: ['exec','-t','db','sleep','60']
+
     -   id: "db mysql"
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','db','ls','var/lib/mysql/']
-        waitFor: ['rodando-docker-compose']
+
+    -   id: "db mysql"
+        name: 'gcr.io/cloud-builders/docker'
+        args: ['exec','-t','db','ls','var/lib/mysql/']
+
 
     -   id: "Rodando migrations"
         name: 'gcr.io/cloud-builders/docker'
