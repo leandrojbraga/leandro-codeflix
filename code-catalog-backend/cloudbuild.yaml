@@ -24,10 +24,14 @@ steps:
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','app','php','/var/www/artisan','key:generate']
 
-    -   id: "Rodando docker ps"
+    -   id: "db initdb"
         name: 'gcr.io/cloud-builders/docker'
-        args: ['logs','db']
-        
+        args: ['exec','-t','db','ls','docker-entrypoint-initdb.d']
+
+    -   id: "db mysql"
+        name: 'gcr.io/cloud-builders/docker'
+        args: ['exec','-t','db','ls','var/lib/mysql/']
+
     -   id: "Rodando migrations"
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','app','php','/var/www/artisan','migrate']
