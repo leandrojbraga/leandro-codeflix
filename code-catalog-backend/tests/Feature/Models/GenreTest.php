@@ -11,7 +11,7 @@ class GenreTest extends TestCase
 {   
     use DatabaseMigrations, FeatureModelsValidations;
 
-    protected function getModel() {
+    protected function model() {
        return Genre::class;
     }
 

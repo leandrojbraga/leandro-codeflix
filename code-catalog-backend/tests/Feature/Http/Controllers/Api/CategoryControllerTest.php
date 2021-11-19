@@ -17,16 +17,20 @@ class CategoryControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->factoryCreateModel();
+        $this->setFactoryModel();
     }
 
-    protected function getModel() {
+    protected function model() {
         return Category::class;
     }
 
-    protected function factoryCreateModel() {
-        $model = $this->getModel();
+    protected function setFactoryModel() {
+        $model = $this->model();
         $this->factoryModel = factory($model)->create();
+    }
+
+    protected function getFactoryModel() {
+        return $this->factoryModel;
     }
 
     protected function setRoute(string $routeSuffix, array $params = []) {
@@ -36,10 +40,6 @@ class CategoryControllerTest extends TestCase
 
     protected function getRoute() {
         return $this->route;
-    }
-
-    protected function getFactoryModel() {
-        return $this->factoryModel;
     }
 
     public function testIndex()

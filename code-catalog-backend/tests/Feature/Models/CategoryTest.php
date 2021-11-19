@@ -11,7 +11,7 @@ class CategoryTest extends TestCase
 {
     use DatabaseMigrations, FeatureModelsValidations;
 
-    protected function getModel() {
+    protected function model() {
        return Category::class;
     }
 

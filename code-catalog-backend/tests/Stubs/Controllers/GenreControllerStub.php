@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Tests\Stubs\Controllers;
 
-use App\Models\Genre;
+use App\Http\Controllers\Api\BasicCrudController;
+use Tests\Stubs\Models\GenreStub;
 
-class GenreController extends BasicCrudController
+class GenreControllerStub extends BasicCrudController
 {
     protected function model() {
-        return Genre::class;
+        return GenreStub::class;
     }
 
     protected function simpleValidationRules() {
@@ -16,4 +17,6 @@ class GenreController extends BasicCrudController
             'is_active' => 'boolean'
         ];
     }
+
+
 }

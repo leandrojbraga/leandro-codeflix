@@ -12,7 +12,7 @@ class CategoryTest extends TestCase
 {
     use UnitModelsValidations;
 
-    protected function getModel() {
+    protected function model() {
         return (new Category());
     }
 

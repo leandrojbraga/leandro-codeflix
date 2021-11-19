@@ -6,13 +6,15 @@ trait FeatureModelsValidations
 {   
     use UuidValidations, DatabaseValidations;
 
+    protected abstract function model();
+
     public function factoryCreateModel() {
-        return factory($this->getModel(), 1)->create();
+        return factory($this->model(), 1)->create();
     }
 
     public function getFactoryListModel() {
         $this->factoryCreateModel();
-        return $this->getModel()::all();
+        return $this->model()::all();
     }
 
     public function assertList()
@@ -30,7 +32,7 @@ trait FeatureModelsValidations
     }
 
     public function getModelCreated(array $data) {
-        $model = $this->getModel()::create($data);
+        $model = $this->model()::create($data);
         $model->refresh();
         return $model;
     }
@@ -50,15 +52,15 @@ trait FeatureModelsValidations
     }
 
     public function assertSoftDelete(string $id) {       
-        $modelToDelete = $this->getModel()::find($id);
+        $modelToDelete = $this->model()::find($id);
         $deleted = $modelToDelete->delete();
         $this->assertTrue($deleted);
         $this->assertNotNull($modelToDelete->deleted_at);
         $this->assertDatabaseData([]);
-        $this->assertNotNull($this->getModel()::onlyTrashed()->find($id));
+        $this->assertNotNull($this->model()::onlyTrashed()->find($id));
 
         $modelToDelete->restore();
         $this->assertNull($modelToDelete->deleted_at);
-        $this->assertNotNull($this->getModel()::find($id));
+        $this->assertNotNull($this->model()::find($id));
     }
 }

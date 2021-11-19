@@ -2,7 +2,7 @@
 
 namespace Tests\Traits;
 
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Lang;
 
 trait FeatureHttpValidations
@@ -10,6 +10,17 @@ trait FeatureHttpValidations
     use UuidValidations, DatabaseValidations;
 
     private $response;
+
+    protected abstract function model();
+
+    protected abstract function setFactoryModel();
+
+    protected abstract function getFactoryModel();
+
+    protected abstract function setRoute(string $routeSuffix, array $params = []);
+
+    protected abstract function getRoute();
+
 
     public function sendRequest(string $method = "GET", $data = []) {
         $headers = ['Accept' => 'application/json'];
