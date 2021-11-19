@@ -1,11 +1,7 @@
 steps:
 
-    -   id: "Instalando docker-compose"
-        name: 'docker/compose'
-        args: ['up','-d']
-
     -   id: "Rodando docker-compose"
-        name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
+        name: 'docker/compose'
         args: ['-f','code-catalog-backend/docker-compose.prod.yaml','up','-d']
 
     -   id: "Chown in /var/www"
