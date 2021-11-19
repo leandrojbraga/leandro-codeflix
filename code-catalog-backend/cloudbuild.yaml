@@ -24,13 +24,10 @@ steps:
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','app','php','/var/www/artisan','key:generate']
 
-    -   id: "Wait for db"
-        name: 'jwilder/dockerize:0.6.1'
-        args: ['dockerize','-timeout=120s','-wait=tcp://db:3306']
-
     -   id: "db mysql"
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','db','ls','var/lib/mysql/']
+        waitFor: ['Rodando docker-compose']
 
     -   id: "Rodando migrations"
         name: 'gcr.io/cloud-builders/docker'
