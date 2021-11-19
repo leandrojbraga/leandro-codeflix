@@ -26,11 +26,15 @@ steps:
 
     -   id: "sleep db mysql"
         name: 'gcr.io/cloud-builders/docker'
-        args: ['exec','-t','db','sleep','60']
+        args: ['exec','-t','app','sleep','60']
 
     -   id: "db mysql"
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','db','ls','var/lib/mysql/']
+    
+    -   id: "db mysql"
+        name: 'gcr.io/cloud-builders/docker'
+        args: ['ps']
 
     -   id: "Rodando migrations"
         name: 'gcr.io/cloud-builders/docker'
