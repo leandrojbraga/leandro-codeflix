@@ -6,7 +6,7 @@ steps:
 
     -   id: "Rodando docker ps"
         name: 'gcr.io/cloud-builders/docker'
-        args: ['ps']
+        args: ['logs','db']
 
     -   id: "Chown in /var/www"
         name: 'gcr.io/cloud-builders/docker'
