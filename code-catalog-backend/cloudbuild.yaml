@@ -4,13 +4,13 @@ steps:
         name: 'docker/compose'
         args: ['-f','code-catalog-backend/docker-compose.prod.yaml','up','-d']
 
+    -   id: "Rodando docker ps"
+        name: 'gcr.io/cloud-builders/docker'
+        args: ['ps']
+
     -   id: "Chown in /var/www"
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-u','root','-t','app','chown','-R','www-data:www-data','/var/www']
-
-    -   id: "Wait for db"
-        name: 'jwilder/dockerize:0.6.1'
-        args: ['dockerize','-timeout=40s','-wait=tcp://db:3306']
 
     -   id: "Copiando .env"
         name: 'gcr.io/cloud-builders/docker'
