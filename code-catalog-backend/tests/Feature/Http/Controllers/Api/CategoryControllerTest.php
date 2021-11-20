@@ -85,6 +85,13 @@ class CategoryControllerTest extends TestCase
                     'replace' => [ 'max' => 255 ]
                 ]
             ],
+            [   'attribute' => 'name',
+                'content' => ['name' => 'C'],
+                'validation' => [
+                    'key' => 'min.string',
+                    'replace' => [ 'min' => 3 ]
+                ]
+            ],
             [   'attribute' => 'is_active',
                 'content' => ['name' => 'Category', 'is_active' => 'C'],
                 'validation' => [

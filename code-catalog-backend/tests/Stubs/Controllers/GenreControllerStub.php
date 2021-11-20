@@ -11,7 +11,7 @@ class GenreControllerStub extends BasicCrudController
         return GenreStub::class;
     }
 
-    protected function simpleValidationRules() {
+    protected function validationRules() {
         return [
             'name' => 'required|max:255',
             'is_active' => 'boolean'

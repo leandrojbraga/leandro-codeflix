@@ -10,9 +10,9 @@ class CategoryController extends BasicCrudController
         return Category::class;
     }
 
-    protected function simpleValidationRules() {
+    protected function validationRules() {
         return [
-            'name' => 'required|max:255',
+            'name' => 'required|min:3|max:255',
             'description' => 'nullable',
             'is_active' => 'boolean'
         ];

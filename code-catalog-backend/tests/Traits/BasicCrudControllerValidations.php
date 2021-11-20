@@ -36,7 +36,7 @@ trait BasicCrudControllerValidations
         $request->shouldReceive('all')
             ->once()
             ->andReturn($requestReturn);
-
+        
         $reflectionMethod = $this->reflectionClass->getMethod('validateRequestData');
         $reflectionMethod->setAccessible(true);
 
