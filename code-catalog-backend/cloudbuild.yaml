@@ -10,7 +10,7 @@ steps:
 
     -   id: "Chown in /docker-entrypoint-initdb.d"
         name: 'gcr.io/cloud-builders/docker'
-        args: ['exec','-u','root','-t','app','chown','-R','775','/docker-entrypoint-initdb.d']
+        args: ['exec','-u','root','-t','db','chown','-R','775','/docker-entrypoint-initdb.d']
 
     -   id: "Rodando composer"
         name: 'gcr.io/cloud-builders/docker'
