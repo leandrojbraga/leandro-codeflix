@@ -28,7 +28,7 @@ services:
             - app
 
     db:
-        image: mysql:5.7
+        image: ./.docker/mysql
         command: --innodb-use-native-aio=0
         container_name: db
         restart: always
@@ -36,8 +36,8 @@ services:
         ports:
             - "33006:3306"
         volumes:
-            - ./.docker/dbdata:/var/lib/mysql:rw
-            - ./.docker/mysql:/docker-entrypoint-initdb.d:rw
+            - ./.docker/dbdata:/var/lib/mysql
+            - ./.docker/mysql:/docker-entrypoint-initdb.d
         environment:
             - MYSQL_ROOT_PASSWORD=root
         networks:
