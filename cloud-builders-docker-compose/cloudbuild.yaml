@@ -12,7 +12,6 @@ steps:
   - 'gcr.io/$PROJECT_ID/docker-compose:latest'
   - '-t'
   - 'gcr.io/$PROJECT_ID/docker-compose:${_DOCKER_COMPOSE_VERSION}'
-  - '-f'
   - 'cloud-builders-docker-compose/Dockerfile'
 - name: 'gcr.io/$PROJECT_ID/docker-compose'
   args: ['version']
