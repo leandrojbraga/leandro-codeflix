@@ -39,27 +39,28 @@ Accept: application/json
 
 
 ###
-GET http://localhost:8000/api/genres/
+GET http://localhost:8000/api/cast-members/
 
 ###
-GET http://localhost:8000/api/genres/00736f68-c5f1-42fb-bc16-0690d409afc7
+GET http://localhost:8000/api/cast-members/e5d20c43-00f5-413a-8636-c4660d572a8e
 Accept: application/json
 
 
 ###
-POST http://localhost:8000/api/genres/
+POST http://localhost:8000/api/cast-members/
 Content-type: application/json
 Accept: application/json
 
 {
-    "name": "Terror"
+    "name": "Leandro2",
+    "type": 3
 }
 
 
 
 # PUT (Completa) vs PATCH (Parcial)
 ###
-PUT http://localhost:8000/api/genres/d8d7e510-5ff4-4a7b-9c1a-94f7fa3c9cb9
+PUT http://localhost:8000/api/cast-members/d8d7e510-5ff4-4a7b-9c1a-94f7fa3c9cb9
 Content-type: application/json
 Accept: application/json
 
@@ -69,5 +70,5 @@ Accept: application/json
 }
 
 ###
-DELETE http://localhost:8000/api/genres/ff951464-9f69-4de8-9c30-0e80e72c0d63
+DELETE http://localhost:8000/api/cast-members/ff951464-9f69-4de8-9c30-0e80e72c0d63
 Accept: application/json

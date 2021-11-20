@@ -9,7 +9,7 @@ abstract class BasicCrudController extends Controller
 {
     protected abstract function model();
 
-    protected abstract function simpleValidationRules();
+    protected abstract function validationRules();
 
     // Display a listing of the resource.
     // GET -> api/{model}/
@@ -20,7 +20,7 @@ abstract class BasicCrudController extends Controller
 
     protected function validateRequestData(Request $request)
     {
-        return $this->validate($request, $this->simpleValidationRules());
+        return $this->validate($request, $this->validationRules());
     }
 
     // Store a newly created resource in storage.

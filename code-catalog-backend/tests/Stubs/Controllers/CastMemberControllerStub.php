@@ -3,18 +3,18 @@
 namespace Tests\Stubs\Controllers;
 
 use App\Http\Controllers\Api\BasicCrudController;
-use Tests\Stubs\Models\CategoryStub;
+use Tests\Stubs\Models\CastMemberStub;
 
-class CategoryControllerStub extends BasicCrudController
+class CastMemberControllerStub extends BasicCrudController
 {
     protected function model() {
-        return CategoryStub::class;
+        return CastMemberStub::class;
     }
 
     protected function validationRules() {
         return [
             'name' => 'required|max:255',
-            'description' => 'nullable'
+            'type' => 'required|in:1,2'
         ];
     }
 

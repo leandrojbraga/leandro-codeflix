@@ -1,9 +1,9 @@
 #Criar modelo
-php artisan make:model Models/Genre --all
+php artisan make:model Models/CastMember --all
 
 
 # Criar seeder
-php artisan make:seeder GenresSeeder
+php artisan make:seeder CastMembersSeeder
 
 
 # Criar request validate

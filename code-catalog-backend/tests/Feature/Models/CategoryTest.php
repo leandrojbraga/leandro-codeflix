@@ -41,8 +41,7 @@ class CategoryTest extends TestCase
             $data + [
                 'description' => null,
                 'is_active' => true
-            ],
-            true
+            ]
         );
 
         //Validate id is Uuid4

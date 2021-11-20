@@ -2,17 +2,17 @@
 
 namespace Tests\Feature\Models;
 
-use App\Models\Genre;
+use App\Models\CastMember;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Tests\Traits\FeatureModelsValidations;
 
-class GenreTest extends TestCase
-{   
+class CastMemberTest extends TestCase
+{
     use DatabaseMigrations, FeatureModelsValidations;
 
     protected function model() {
-       return Genre::class;
+       return CastMember::class;
     }
 
     public function testList()
@@ -24,61 +24,49 @@ class GenreTest extends TestCase
     {   
         $this->assertAttributes(
             [
-                'id', 'name', 'is_active',
+                'id', 'name', 'type',
                 'created_at', 'updated_at', 'deleted_at'
             ]
         );
     }
 
     public function testCreate() {
-        $name = 'Category Test';
+        $name = 'CastMember Test';
+        $type = 1;
                 
         // Validate a default create
-        $data = [ 'name' => $name ];
+        $data = [ 
+            'name' => $name,
+            'type' => $type
+        ];
         $this->assertCreate(
             $data,
-            $data + [
-                'is_active' => true
-            ]
+            $data
         );
 
         //Validate id is Uuid4
         $this->assertIdIsUuid4(
             $this->getModelCreated($data)->id
         );
-
-        // Validate is_active false
-        $data = [
-            'name' => $name,
-            'is_active' => false
-        ];
-        $this->assertCreate($data, $data);
-
-        // Validate is_active true
-        $data = [
-            'name' => $name,
-            'is_active' => true
-        ];
-        $this->assertCreate($data, $data);
     }
     
     public function testEdit() {
         $this->assertEdit(
             [
-                'name' => 'Category old',
-                'is_active' => false
+                'name' => 'CastMember old',
+                'type' => 1
             ],
             [
-                'name' => 'Category edited',
-                'is_active' => true
+                'name' => 'CastMember edited',
+                'type' => 2
             ]
         );
     }
 
     public function testSoftDelete() {
         $modelCreated = $this->getModelCreated([
-            'name' => 'Category',
-            'is_active' => false
+            'name' => 'CastMember',
+            'type' => 1
         ]);
 
         $this->assertSoftDelete($modelCreated->id);

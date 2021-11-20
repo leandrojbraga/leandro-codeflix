@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
-use App\Models\Genre;
+use App\Models\CastMember;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Tests\Traits\FeatureHttpValidations;
 
-class GenreControllerTest extends TestCase
+class CastMemberControllerTest extends TestCase
 { 
 
     use DatabaseMigrations, FeatureHttpValidations;
@@ -22,7 +22,7 @@ class GenreControllerTest extends TestCase
     }
 
     protected function model() {
-        return Genre::class;
+        return CastMember::class;
     }
 
     protected function setFactoryModel() {
@@ -35,7 +35,7 @@ class GenreControllerTest extends TestCase
     }
 
     protected function setRoute(string $routeSuffix, array $params = []) {
-        $routePrefix = "genres";
+        $routePrefix = "cast-members";
         $this->route = route($routePrefix.'.'.$routeSuffix, $params);
     }
 
@@ -51,10 +51,10 @@ class GenreControllerTest extends TestCase
 
     public function testShow()
     {   
-        $this->setRoute('show', ['genre' => $this->getFactoryModel()->id]);
+        $this->setRoute('show', ['cast_member' => $this->getFactoryModel()->id]);
         $this->assertShow();
 
-        $this->setRoute('show', ['genre' => 0]);
+        $this->setRoute('show', ['cast_member' => 0]);
         $this->assertShowNotFound();
     }
     
@@ -65,7 +65,7 @@ class GenreControllerTest extends TestCase
         $this->assertInvalidationDataByAttribute('POST');
 
         // Test update
-        $this->setRoute('update', ['genre' => $this->getFactoryModel()->id]);
+        $this->setRoute('update', ['cast_member' => $this->getFactoryModel()->id]);
         $this->assertInvalidationDataByAttribute('PUT');
     }
 
@@ -80,23 +80,30 @@ class GenreControllerTest extends TestCase
                 ]
             ],
             [   'attribute' => 'name',
-                'content' => ['name' => str_repeat('G', 256)],
+                'content' => ['name' => str_repeat('CM', 256)],
                 'validation' => [
                     'key' => 'max.string',
                     'replace' => [ 'max' => 255 ]
                 ]
             ],
             [   'attribute' => 'name',
-                'content' => ['name' => 'G'],
+                'content' => ['name' => 'CM'],
                 'validation' => [
                     'key' => 'min.string',
                     'replace' => [ 'min' => 3 ]
                 ]
             ],
-            [   'attribute' => 'is_active',
-                'content' => ['name' => 'Genre', 'is_active' => 'C'],
+            [   'attribute' => 'type',
+                'content' => [],
                 'validation' => [
-                    'key' => 'boolean',
+                    'key' => 'required',
+                    'replace' => []
+                ]
+            ],
+            [   'attribute' => 'type',
+                'content' => ['type' => 0],
+                'validation' => [
+                    'key' => 'not_in',
                     'replace' => []
                 ]
             ]
@@ -109,63 +116,44 @@ class GenreControllerTest extends TestCase
                 (object) $validateAttribute['validation']
             );
         }
-
-        $this->assertMissingValidationDataNotRequired(
-            $method,
-            [],
-            ['is_active']
-        );
     }
 
     public function testStore()
     {
-        $name = 'Genre Test';
+        $name = 'CastMember Test';
+        $type = 1;
         
         $this->setRoute('store');
 
         // Validate a default create
-        $data = [ 'name' => $name ];
+        $data = [ 
+            'name' => $name,
+            'type' => $type
+        ];
         $this->assertStore(
             $data,
-            $data + [
-                'is_active' => true
-            ],
-            true
+            $data
         );
 
         //Validate id is Uuid4
         $this->assertIdIsUuid4($this->getRequestId());
-
-        // Validate is_active false
-        $data = [
-            'name' => $name,
-            'is_active' => false
-        ];
-        $this->assertStore($data, $data);
-
-        // Validate is_active true
-        $data = [
-            'name' => $name,
-            'is_active' => true
-        ];
-        $this->assertStore($data, $data);
     }
     
     public function testUpdate()
     {
-        $this->setRoute('update', ['genre' => $this->getFactoryModel()->id]);
+        $this->setRoute('update', ['cast_member' => $this->getFactoryModel()->id]);
 
         $this->assertUpdate(
             [   
-                'name' => 'Genre Test',
-                'is_active' => false
+                'name' => 'CastMember Test',
+                'type' => 2
             ]
         );
     }
 
     public function testDestroy()
     {
-        $this->setRoute('destroy', ['genre' => $this->getFactoryModel()->id]);
+        $this->setRoute('destroy', ['cast_member' => $this->getFactoryModel()->id]);
         $this->assertDestroy();
     }
     
