@@ -3,11 +3,15 @@ steps:
     -   id: "rodando-docker-compose"
         name: 'gcr.io/$PROJECT_ID/docker-compose:1.28.2'
         args: ['-f','code-catalog-backend/docker-compose.prod.yaml','up','-d']
+    
+    -   id: "db logs"
+        name: 'gcr.io/cloud-builders/docker'
+        args: ['logs','db']
 
     -   id: "Chown in /var/www"
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-u','root','-t','app','chown','-R','www-data:www-data','/var/www']
-        
+
     -   id: "Rodando composer"
         name: 'gcr.io/cloud-builders/docker'
         args: ['exec','-t','app','composer','install']
