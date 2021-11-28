@@ -177,7 +177,8 @@ class CategoryControllerTest extends TestCase
                 $update_data + ['deleted_at' => null]
             );
 
-            $this->model()::truncate();
+            $model = $this->model()::find($this->getRequestId());
+            $model->delete();
         }
     }
 

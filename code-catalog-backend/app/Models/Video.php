@@ -31,4 +31,14 @@ class Video extends Model
         'duration' => 'integer'
     ];
 
+    protected $with = ['categories', 'genres'];
+
+    public function categories() {
+        return $this->belongsToMany(Category::class)->select(array('categories.id','categories.name'));
+    }
+
+    public function genres() {
+        return $this->belongsToMany(Genre::class)->select(array('genres.id','genres.name'));
+    }
+
 }

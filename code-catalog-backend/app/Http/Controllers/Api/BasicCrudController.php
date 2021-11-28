@@ -55,19 +55,19 @@ abstract class BasicCrudController extends Controller
     public function update(Request $request, $id)
     {
         $validateData = $this->validateRequestData($request);
-        $category = $this->findOrFail($id);
+        $obj = $this->findOrFail($id);
+        $obj->update($validateData);
         
-        $category->update($validateData);
-        return $category;
+        return $obj;
     }
 
     // Remove the specified resource from storage.
     // DELETE -> api/{model}/{id}
     public function destroy($id)
     {   
-        $category = $this->findOrFail($id);
+        $obj = $this->findOrFail($id);
         
-        $category->delete();
+        $obj->delete();
         return response()->noContent(); //204 - No content
     }
 }

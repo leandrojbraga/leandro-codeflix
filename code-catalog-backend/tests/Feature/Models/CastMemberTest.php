@@ -75,8 +75,16 @@ class CastMemberTest extends TestCase
                 $update_data + ['deleted_at' => null]
             );
 
-            $this->model()::truncate();
+            $model = $this->model()::all()->first();
+            $model->delete();
         }
+    }
+
+    public function testUuid4()
+    {
+        $this->assertIdIsUuid4(
+            $this->getModelCreated($this->sendData)->id
+        );
     }
 
     public function testSoftDelete() {

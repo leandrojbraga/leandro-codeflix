@@ -2,10 +2,15 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\VideoController;
+use App\Models\Category;
+use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Tests\Exceptions\TestException;
 use Tests\TestCase;
 use Tests\Traits\FeatureHttpValidations;
+use Illuminate\Http\Request;
 
 class VideoControllerTest extends TestCase
 {   
@@ -14,17 +19,30 @@ class VideoControllerTest extends TestCase
     private $factoryModel;
     private $route;
     private $sendData;
+    private $factoryCategory;
+    private $factoryGenre;
+    private $sendConstrains;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->setFactoryModel();
+        
         $this->sendData = [
             'title' => 'Video title',
             'description' => 'Video description',
             'year_launched' => 2020,
             'rating' => Video::RATINGS[0],
             'duration' => 90
+        ];
+        
+        $this->factoryCategory = factory(Category::class)->create();
+        $this->factoryCategory->refresh();
+        $this->factoryGenre = factory(Genre::class)->create();
+
+        $this->sendConstrains = [
+            'categories_id' => [$this->factoryCategory->id],
+            'genres_id' => [$this->factoryGenre->id]
         ];
     }
 
@@ -84,7 +102,9 @@ class VideoControllerTest extends TestCase
             'description' => '',
             'year_launched' => '',
             'rating' => '',
-            'duration' => ''
+            'duration' => '',
+            'categories_id' => '',
+            'genres_id' => ''
         ];
 
         $this->assertInvalidationData(
@@ -161,6 +181,30 @@ class VideoControllerTest extends TestCase
             $method, $data, 'in'
         );
     }
+
+    public function assertInvalidationArray($method){
+        $data = [
+            'categories_id' => 'test',
+            'genres_id' => 'test'
+
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'array'
+        );
+    }
+
+    public function assertInvalidationConstraintsExists($method){
+        $data = [
+            'categories_id' => ['test'],
+            'genres_id' => ['test']
+
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'exists'
+        );
+    }
     
     public function assertInvalidationDataByAttribute($method)
     {   
@@ -181,24 +225,42 @@ class VideoControllerTest extends TestCase
         );
     }
 
+    public function assertSaveConstrains() {       
+        $video = $this->model()::find($this->getRequestId());
+
+        $this->assertCount(1,$video->categories);
+        $this->assertEquals(
+            $this->factoryCategory->id,
+            $video->categories->first()->id
+        );
+
+        $this->assertCount(1,$video->genres);
+        $this->assertEquals(
+            $this->factoryGenre->id,
+            $video->genres->first()->id
+        );
+    }
+
     public function testSave()
-    {
+    {   
         $data = [
             [
-                'send_data' => $this->sendData,
+                'send_data' => $this->sendData + $this->sendConstrains,
                 'test_data' => $this->sendData + ['opened' => false]
             ],
             [
-                'send_data' =>  $this->sendData + ['opened' => false],
+                'send_data' =>  $this->sendData + 
+                                $this->sendConstrains + ['opened' => false],
                 'test_data' =>  $this->sendData + ['opened' => false]
             ],
             [
-                'send_data' =>  $this->sendData + ['opened' => true],
+                'send_data' =>  $this->sendData +
+                                $this->sendConstrains + ['opened' => true],
                 'test_data' =>  $this->sendData + ['opened' => true]
             ],
             [
                 'send_data' =>  array_replace(
-                                    $this->sendData,
+                                    $this->sendData + $this->sendConstrains,
                                     ['rating' => Video::RATINGS[3]]
                                 ),
                 'test_data' =>  array_replace(
@@ -214,27 +276,84 @@ class VideoControllerTest extends TestCase
                 $value['send_data'],
                 $value['test_data'] + ['deleted_at' => null]
             );
+            $this->assertSaveConstrains();
 
             $this->setRoute('update', ['video' => $this->getRequestId()]);
-            $update_data = array_replace(
+            $updateSendData = array_replace(
                 $value['send_data'],
                 ['title' => 'Updating title']
             );
-            $this->assertUpdate(
-                $update_data,
-                $update_data + ['deleted_at' => null]
+            $updateTestData = array_replace(
+                $value['test_data'],
+                ['title' => 'Updating title']
             );
+            $this->assertUpdate(
+                $updateSendData,
+                $updateTestData + ['deleted_at' => null]
+            );
+            $this->assertSaveConstrains();
 
-            $this->model()::truncate();
+            $model = $this->model()::find($this->getRequestId());
+            $model->delete();
         }
     }
 
     public function testUuid4()
     {
         $this->setRoute('store');
-        $this->assertStore($this->sendData, $this->sendData);
+        $this->assertStore(
+            $this->sendData + $this->sendConstrains,
+            $this->sendData);
 
         $this->assertIdIsUuid4($this->getRequestId());
+    }
+
+    private function mockVideoController() {
+        $controller = \Mockery::mock(VideoController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+        
+        $controller
+            ->shouldReceive('validationRules')
+            ->withAnyArgs()
+            ->andReturn([]);
+
+        $controller
+            ->shouldReceive('validateRequestData')
+            ->withAnyArgs()
+            ->andReturn($this->sendData);
+      
+
+        $controller
+            ->shouldReceive('handleRelations')
+            ->once()
+            ->andThrow(new TestException());
+        
+        return $controller;
+    }
+    public function testRollback()
+    {
+        $request = \Mockery::mock(Request::class);
+
+        $controller =  $this->mockVideoController();
+        try {
+            $controller->store($request);
+        } catch (TestException $exception) {
+            $this->assertCount(1, Video::all());
+        }
+
+        
+        $id = $this->getFactoryModel()->id;
+        $updatedAt = $this->getFactoryModel()->updated_at;
+        
+        $controller =  $this->mockVideoController();
+        try {
+            $controller->update($request, $id);
+        } catch (TestException $exception) {
+            $this->assertEquals(
+                $updatedAt,
+                Video::find($id)->updated_at);
+        }
     }
 
     public function testDestroy()
