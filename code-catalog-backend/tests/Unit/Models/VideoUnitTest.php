@@ -2,24 +2,29 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\Category;
+use App\Models\Video;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPUnit\Framework\TestCase;
 use Tests\Traits\UnitModelsValidations;
 
-class CategoryTest extends TestCase
+class VideoUnitTest extends TestCase
 {
     use UnitModelsValidations;
 
     protected function model() {
-        return (new Category());
+        return (new Video());
     }
 
     public function testFillableAttributes() {        
         $this->assertFillableAttributes(
-            ['name', 'description', 'is_active']
-        );
+            ['title',
+            'description',
+            'year_launched',
+            'opened',
+            'rating',
+            'duration'
+        ]);
     }
 
     public function testDatesAttributes() {   
@@ -40,7 +45,7 @@ class CategoryTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['is_active']
+            ['opened', 'year_launched', 'duration']
         );
     }
 

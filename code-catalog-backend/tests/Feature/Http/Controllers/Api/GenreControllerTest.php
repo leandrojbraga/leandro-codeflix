@@ -14,11 +14,13 @@ class GenreControllerTest extends TestCase
     
     private $factoryModel;
     private $route;
+    private $sendData;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->setFactoryModel();
+        $this->sendData = [ 'name' => 'Genre name' ];
     }
 
     protected function model() {
@@ -69,46 +71,58 @@ class GenreControllerTest extends TestCase
         $this->assertInvalidationDataByAttribute('PUT');
     }
 
+    public function assertInvalidationRequired($method) {   
+        $data = [
+            'name' => ''
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'required'
+        );
+    }
+
+    public function assertInvalidationLength($method) {
+        $data = [
+            'name' => str_repeat('G', 256)
+        ];
+        $attributeRuleReplaces = [
+            'name' => [ 'max' => 255 ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'max.string', $attributeRuleReplaces
+        );
+
+
+        $data = [
+            'name' => 'G'
+        ];
+        $attributeRuleReplaces = [
+            'name' => [ 'min' => 3 ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'min.string', $attributeRuleReplaces
+        );
+    }
+
+    public function assertInvalidationBoolean($method){
+        $data = [
+            'is_active' => 'g'
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'boolean'
+        );
+    }
+
     public function assertInvalidationDataByAttribute($method)
     {   
-        $validateAttributes = [
-            [   'attribute' => 'name',
-                'content' => [],
-                'validation' => [
-                    'key' => 'required',
-                    'replace' => []
-                ]
-            ],
-            [   'attribute' => 'name',
-                'content' => ['name' => str_repeat('G', 256)],
-                'validation' => [
-                    'key' => 'max.string',
-                    'replace' => [ 'max' => 255 ]
-                ]
-            ],
-            [   'attribute' => 'name',
-                'content' => ['name' => 'G'],
-                'validation' => [
-                    'key' => 'min.string',
-                    'replace' => [ 'min' => 3 ]
-                ]
-            ],
-            [   'attribute' => 'is_active',
-                'content' => ['name' => 'Genre', 'is_active' => 'C'],
-                'validation' => [
-                    'key' => 'boolean',
-                    'replace' => []
-                ]
-            ]
-        ];
-        foreach($validateAttributes as $validateAttribute) {
-            $this->assertInvalidationData(
-                $method,
-                $validateAttribute['content'],
-                $validateAttribute['attribute'],
-                (object) $validateAttribute['validation']
-            );
-        }
+        $this->assertInvalidationRequired($method);
+
+        $this->assertInvalidationLength($method);
+
+        $this->assertInvalidationBoolean($method);
 
         $this->assertMissingValidationDataNotRequired(
             $method,
@@ -117,50 +131,50 @@ class GenreControllerTest extends TestCase
         );
     }
 
-    public function testStore()
+    public function testSave()
     {
-        $name = 'Genre Test';
-        
-        $this->setRoute('store');
-
-        // Validate a default create
-        $data = [ 'name' => $name ];
-        $this->assertStore(
-            $data,
-            $data + [
-                'is_active' => true
+        $data = [
+            [   // Validate a default create
+                'send_data' => $this->sendData,
+                'test_data' => $this->sendData + ['is_active' => true]
             ],
-            true
-        );
-
-        //Validate id is Uuid4
-        $this->assertIdIsUuid4($this->getRequestId());
-
-        // Validate is_active false
-        $data = [
-            'name' => $name,
-            'is_active' => false
-        ];
-        $this->assertStore($data, $data);
-
-        // Validate is_active true
-        $data = [
-            'name' => $name,
-            'is_active' => true
-        ];
-        $this->assertStore($data, $data);
-    }
-    
-    public function testUpdate()
-    {
-        $this->setRoute('update', ['genre' => $this->getFactoryModel()->id]);
-
-        $this->assertUpdate(
-            [   
-                'name' => 'Genre Test',
-                'is_active' => false
+            [
+                'send_data' => $this->sendData + ['is_active' => false],
+                'test_data' => $this->sendData + ['is_active' => false]
+            ],
+            [
+                'send_data' => $this->sendData + ['is_active' => true],
+                'test_data' => $this->sendData + ['is_active' => true]
             ]
-        );
+        ];
+
+        foreach($data as $key => $value) {
+            $this->setRoute('store');
+            $this->assertStore(
+                $value['send_data'],
+                $value['test_data'] + ['deleted_at' => null]
+            );
+
+            $this->setRoute('update', ['genre' => $this->getRequestId()]);
+            $update_data = array_replace(
+                $value['send_data'],
+                ['name' => 'Updating genre']
+            );
+            $this->assertUpdate(
+                $update_data,
+                $update_data + ['deleted_at' => null]
+            );
+
+            $this->model()::truncate();
+        }
+    }
+
+    public function testUuid4()
+    {
+        $this->setRoute('store');
+        $this->assertStore($this->sendData, $this->sendData);
+
+        $this->assertIdIsUuid4($this->getRequestId());
     }
 
     public function testDestroy()

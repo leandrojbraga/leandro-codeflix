@@ -43,12 +43,12 @@ trait FeatureModelsValidations
         $this->assertDatabaseData($validadeData);
     }  
 
-    public function assertEdit(array $oldData, array $newData) {        
-        $model = $this->getModelCreated($oldData);
+    public function assertEdit(array $data, array $validadeData) {        
+        $model = $this->model()::all()->first();
         
-        $model->update($newData);
+        $model->update($data);
 
-        $this->assertDatabaseData($newData);
+        $this->assertDatabaseData($validadeData);
     }
 
     public function assertSoftDelete(string $id) {       

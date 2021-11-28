@@ -2,23 +2,23 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\CastMember;
+use App\Models\Category;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPUnit\Framework\TestCase;
 use Tests\Traits\UnitModelsValidations;
 
-class CastMemberTest extends TestCase
+class CategoryUnitTest extends TestCase
 {
     use UnitModelsValidations;
 
     protected function model() {
-        return (new CastMember());
+        return (new Category());
     }
 
     public function testFillableAttributes() {        
         $this->assertFillableAttributes(
-            ['name', 'type']
+            ['name', 'description', 'is_active']
         );
     }
 
@@ -40,7 +40,7 @@ class CastMemberTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['type']
+            ['is_active']
         );
     }
 

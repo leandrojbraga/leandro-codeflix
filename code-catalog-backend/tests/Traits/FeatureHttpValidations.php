@@ -68,21 +68,27 @@ trait FeatureHttpValidations
             $data
         );
     }
+
     public function assertInvalidationData(
         string $method, array $data,
-        string $attribute, object $validation)
+        string $validationRule, array $attributeRuleReplaces = [])
     {   
         $this->assertInvalidationDataRequest($method, $data);
-        
-        $attributeName = str_replace('_', ' ', $attribute);
 
-        $this->response
+        foreach(array_keys($data) as $attribute) {
+            $attributeName = str_replace('_', ' ', $attribute);
+            $replace = isset($attributeRuleReplaces[$attribute]) 
+                ? $attributeRuleReplaces[$attribute] 
+                : [];
+
+            $this->response
             ->assertJsonValidationErrors([$attribute])
             ->assertJsonFragment([ 
                 Lang::get(
-                    'validation.'.$validation->key, 
-                    ['attribute' => $attributeName] + $validation->replace)   
+                    'validation.'.$validationRule, 
+                    ['attribute' => $attributeName] + $replace)   
             ]);
+        }
     }
 
     public function assertMissingValidationDataNotRequired(
@@ -93,6 +99,15 @@ trait FeatureHttpValidations
         $this->response->assertJsonMissingValidationErrors($attributes);
     }
     
+    public function assertData($validadeData)
+    {
+        $this->assertDatabaseData($validadeData);
+
+        $this->response->assertJsonStructure([
+            'created_at', 'updated_at'
+        ]);
+    }
+
     public function assertStore($data, $validadeData)
     {   
         $this->assertRequestAndStatusCode(
@@ -101,10 +116,11 @@ trait FeatureHttpValidations
             $data
         );
         
-        $this->assertDatabaseData($validadeData);
+        $this->assertData($validadeData);
+        
     }
 
-    public function assertUpdate($data)
+    public function assertUpdate($data, $validadeData)
     {   
         $this->assertRequestAndStatusCode(
             Response::HTTP_OK,
@@ -112,7 +128,7 @@ trait FeatureHttpValidations
             $data
         );
         
-        $this->assertDatabaseData($data);
+        $this->assertData($validadeData);
     }   
 
     public function assertDestroy() {

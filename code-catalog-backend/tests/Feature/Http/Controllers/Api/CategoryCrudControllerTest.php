@@ -13,6 +13,8 @@ class CategoryCrudControllerTest extends TestCase
 {   
     use BasicCrudControllerValidations;
 
+    private $sendData;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -20,6 +22,10 @@ class CategoryCrudControllerTest extends TestCase
         CategoryStub::createTable();
         $this->controller = new CategoryControllerStub();
         $this->reflectionClass = new \ReflectionClass(BasicCrudController::class);
+        $this->sendData = [
+            'name' => 'test name',
+            'description' => 'test description'
+        ];
     }
     
     protected function tearDown(): void
@@ -30,9 +36,7 @@ class CategoryCrudControllerTest extends TestCase
 
     public function getNewModelStub()
     {
-        return CategoryStub::create(
-            ['name' => 'test name', 'description' => 'test description']
-        );
+        return CategoryStub::create($this->sendData);
     }
 
     public function model()
@@ -52,12 +56,15 @@ class CategoryCrudControllerTest extends TestCase
 
     public function testInvalidationData()
     {   
-        $this->assertInvalidationData(['name' => '']);
+        $this->assertInvalidationData([]);
+
+        $data = array_replace($this->sendData, ['name' => '']);
+        $this->assertInvalidationData($data);
     }
 
     public function testStore()
     {   
-        $this->assertStore(['name' => 'test name', 'description' => 'test description']);
+        $this->assertStore($this->sendData);
     }
 
     public function testIFFindOrFailFetchModel()

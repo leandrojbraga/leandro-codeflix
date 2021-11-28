@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Models;
 
-use App\Models\CastMember;
+use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Tests\Traits\FeatureModelsValidations;
 
-class CastMemberTest extends TestCase
-{
+class VideoTest extends TestCase
+{   
     use DatabaseMigrations, FeatureModelsValidations;
 
     private $sendData;
@@ -16,14 +16,17 @@ class CastMemberTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->sendData = [ 
-            'name' => 'CastMember Test',
-            'type' => CastMember::TYPE_DIRECTOR
+        $this->sendData = [
+            'title' => 'Video title',
+            'description' => 'Video description',
+            'year_launched' => 2020,
+            'rating' => Video::RATINGS[0],
+            'duration' => 90
         ];
     }
 
     protected function model() {
-       return CastMember::class;
+       return Video::class;
     }
 
     public function testList()
@@ -35,7 +38,8 @@ class CastMemberTest extends TestCase
     {   
         $this->assertAttributes(
             [
-                'id', 'name', 'type',
+                'id', 'title', 'description', 'year_launched',
+                'opened', 'rating', 'duration',
                 'created_at', 'updated_at', 'deleted_at'
             ]
         );
@@ -46,16 +50,25 @@ class CastMemberTest extends TestCase
         $data = [
             [
                 'send_data' => $this->sendData,
-                'test_data' => $this->sendData
+                'test_data' => $this->sendData + ['opened' => false]
             ],
             [
-                'send_data' => array_replace(
+                'send_data' =>  $this->sendData + ['opened' => false],
+                'test_data' =>  $this->sendData + ['opened' => false]
+            ],
+            [
+                'send_data' =>  $this->sendData + ['opened' => true],
+                'test_data' =>  $this->sendData + ['opened' => true]
+            ],
+            [
+                'send_data' =>  array_replace(
                                     $this->sendData,
-                                    ['type' => CastMember::TYPE_ACTOR]
+                                    ['rating' => Video::RATINGS[3]]
                                 ),
-                'test_data' => array_replace(
+                'test_data' =>  array_replace(
                                     $this->sendData,
-                                    ['type' => CastMember::TYPE_ACTOR]
+                                    ['rating' => Video::RATINGS[3],
+                                        'opened' => false]
                                 )
             ]
         ];
@@ -68,7 +81,7 @@ class CastMemberTest extends TestCase
 
             $update_data = array_replace(
                 $value['send_data'],
-                ['name' => 'Updating name']
+                ['title' => 'Updating title']
             );
             $this->assertEdit(
                 $update_data,
@@ -79,8 +92,17 @@ class CastMemberTest extends TestCase
         }
     }
 
+    public function testUuid4()
+    {
+        $this->assertIdIsUuid4(
+            $this->getModelCreated($this->sendData)->id
+        );
+    }
+
     public function testSoftDelete() {
-        $modelCreated = $this->getModelCreated($this->sendData);
+        $modelCreated = $this->getModelCreated(
+            $this->sendData + ['is_active' => true]
+        );
 
         $this->assertSoftDelete($modelCreated->id);
     }

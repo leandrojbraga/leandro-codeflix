@@ -4,12 +4,12 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use Tests\TestCase;
 use App\Http\Controllers\Api\BasicCrudController;
-use Tests\Stubs\Controllers\GenreControllerStub;
-use Tests\Stubs\Models\GenreStub;
+use Tests\Stubs\Controllers\VideoControllerStub;
+use Tests\Stubs\Models\VideoStub;
 
 use Tests\Traits\BasicCrudControllerValidations;
 
-class GenreCrudControllerTest extends TestCase
+class VideoCrudControllerTest extends TestCase
 {   
     use BasicCrudControllerValidations;
 
@@ -18,32 +18,36 @@ class GenreCrudControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        GenreStub::dropTable();
-        GenreStub::createTable();
-        $this->controller = new GenreControllerStub();
+        VideoStub::dropTable();
+        VideoStub::createTable();
+        $this->controller = new VideoControllerStub();
         $this->reflectionClass = new \ReflectionClass(BasicCrudController::class);
-        $this->sendData = ['name' => 'test name'];
+        $this->sendData = [
+            'title' => 'Video title',
+            'year_launched' => 2020,
+            'rating' => VideoStub::RATING_GENERAL_AUDIENCE
+        ];
     }
     
     protected function tearDown(): void
     {
-        GenreStub::dropTable();
+        VideoStub::dropTable();
         parent::tearDown();
     }
 
     public function getNewModelStub()
     {
-        return GenreStub::create($this->sendData);
+        return VideoStub::create($this->sendData);
     }
 
     public function model()
     {
-        return GenreStub::class;
+        return VideoStub::class;
     }
 
     public function getFindModelStubArray($id)
     {
-        return GenreStub::find($id)->toArray();
+        return VideoStub::find($id)->toArray();
     }
 
     public function testIndex()
@@ -55,17 +59,29 @@ class GenreCrudControllerTest extends TestCase
     {   
         $this->assertInvalidationData([]);
 
-        $data = array_replace($this->sendData, ['name' => '']);
+        $data = array_replace($this->sendData, ['title' => '']);
+        $this->assertInvalidationData($data);
+        
+        $data = array_replace($this->sendData, ['year_launched' => null]);
         $this->assertInvalidationData($data);
 
-        $data = array_replace($this->sendData, ['is_active' => 'test']);
+        $data = array_replace($this->sendData, ['year_launched' => 99]);
+        $this->assertInvalidationData($data);
+
+        $data = array_replace($this->sendData, ['rating' => '']);
+        $this->assertInvalidationData($data);
+
+        $data = array_replace($this->sendData, ['rating' => 'a']);
+        $this->assertInvalidationData($data);
+
+        $data = $this->sendData + ['opened' => 'b'];
         $this->assertInvalidationData($data);
     }
 
     public function testStore()
     {   
         $this->assertStore(
-            $this->sendData + ['is_active' => false]
+            $this->sendData + ['opened' => true]
         );
     }
 

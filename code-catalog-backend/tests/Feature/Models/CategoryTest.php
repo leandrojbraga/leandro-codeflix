@@ -11,6 +11,14 @@ class CategoryTest extends TestCase
 {
     use DatabaseMigrations, FeatureModelsValidations;
 
+    private $sendData;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->sendData = [ 'name' => 'Category Test' ];
+    }
+
     protected function model() {
        return Category::class;
     }
@@ -30,75 +38,58 @@ class CategoryTest extends TestCase
         );
     }
 
-    public function testCreate() {
-        $name = 'Category Test';
-        $description = 'Category test description';
-                
-        // Validate a default create
-        $data = [ 'name' => $name ];
-        $this->assertCreate(
-            $data,
-            $data + [
-                'description' => null,
-                'is_active' => true
-            ]
-        );
-
-        //Validate id is Uuid4
-        $this->assertIdIsUuid4(
-            $this->getModelCreated($data)->id
-        );
-
-        // Validate description null
+    public function testSave()
+    {
         $data = [
-            'name' => $name,
-            'description' => null,
-        ];
-        $this->assertCreate($data, $data);
-
-        // Validate description NOT null
-        $data = [
-            'name' => $name,
-            'description' => $description
-        ];
-        $this->assertCreate($data, $data);
-
-        // Validate is_active false
-        $data = [
-            'name' => $name,
-            'is_active' => false
-        ];
-        $this->assertCreate($data, $data);
-
-        // Validate is_active true
-        $data = [
-            'name' => $name,
-            'is_active' => true
-        ];
-        $this->assertCreate($data, $data);
-    }
-    
-    public function testEdit() {
-        $this->assertEdit(
             [
-                'name' => 'Category old',
-                'description' => 'Category old description',
-                'is_active' => false
+                'send_data' => $this->sendData,
+                'test_data' => $this->sendData + ['description' => null,
+                                                'is_active' => true]
             ],
             [
-                'name' => 'Category edited',
-                'description' => 'Category edited description',
-                'is_active' => true
+                'send_data' => $this->sendData + ['description' => null],
+                'test_data' => $this->sendData + ['description' => null]
+            ],
+            [
+                'send_data' => $this->sendData + ['description' => 'test description'],
+                'test_data' => $this->sendData + ['description' => 'test description']
+            ],
+            [
+                'send_data' => $this->sendData + ['is_active' => false],
+                'test_data' => $this->sendData + ['is_active' => false]
+            ],
+            [
+                'send_data' => $this->sendData + ['is_active' => true],
+                'test_data' => $this->sendData + ['is_active' => true]
             ]
-        );
+        ];
+
+        foreach($data as $key => $value) {
+            $this->assertCreate(
+                $value['send_data'],
+                $value['test_data'] + ['deleted_at' => null]
+            );
+
+            $update_data = array_replace(
+                $value['send_data'],
+                ['name' => 'Updating name']
+            );
+            $this->assertEdit(
+                $update_data,
+                $update_data + ['deleted_at' => null]
+            );
+
+            $this->model()::truncate();
+        }
     }
 
     public function testSoftDelete() {
-        $modelCreated = $this->getModelCreated([
-            'name' => 'Category',
-            'description' => 'Category description',
-            'is_active' => false
-        ]);
+        $modelCreated = $this->getModelCreated(
+            $this->sendData + [
+                'description' => 'Category description',
+                'is_active' => true
+            ]
+        );
 
         $this->assertSoftDelete($modelCreated->id);
     }

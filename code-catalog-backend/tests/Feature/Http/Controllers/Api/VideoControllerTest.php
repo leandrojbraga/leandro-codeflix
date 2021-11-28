@@ -2,15 +2,15 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
-use App\Models\CastMember;
+use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Tests\Traits\FeatureHttpValidations;
 
-class CastMemberControllerTest extends TestCase
-{ 
+class VideoControllerTest extends TestCase
+{   
     use DatabaseMigrations, FeatureHttpValidations;
-    
+
     private $factoryModel;
     private $route;
     private $sendData;
@@ -19,14 +19,17 @@ class CastMemberControllerTest extends TestCase
     {
         parent::setUp();
         $this->setFactoryModel();
-        $this->sendData = [ 
-            'name' => 'CastMember name',
-            'type' => CastMember::TYPE_DIRECTOR
+        $this->sendData = [
+            'title' => 'Video title',
+            'description' => 'Video description',
+            'year_launched' => 2020,
+            'rating' => Video::RATINGS[0],
+            'duration' => 90
         ];
     }
 
     protected function model() {
-        return CastMember::class;
+        return Video::class;
     }
 
     protected function setFactoryModel() {
@@ -39,7 +42,7 @@ class CastMemberControllerTest extends TestCase
     }
 
     protected function setRoute(string $routeSuffix, array $params = []) {
-        $routePrefix = "cast-members";
+        $routePrefix = "videos";
         $this->route = route($routePrefix.'.'.$routeSuffix, $params);
     }
 
@@ -50,18 +53,19 @@ class CastMemberControllerTest extends TestCase
     public function testIndex()
     {   
         $this->setRoute('index');
+     
         $this->assertIndex();
     }
 
     public function testShow()
     {   
-        $this->setRoute('show', ['cast_member' => $this->getFactoryModel()->id]);
+        $this->setRoute('show', ['video' => $this->getFactoryModel()->id]);
         $this->assertShow();
 
-        $this->setRoute('show', ['cast_member' => 0]);
+        $this->setRoute('show', ['video' => 0]);
         $this->assertShowNotFound();
     }
-    
+
     public function testInvalidationData()
     {   
         // Test create
@@ -69,28 +73,31 @@ class CastMemberControllerTest extends TestCase
         $this->assertInvalidationDataByAttribute('POST');
 
         // Test update
-        $this->setRoute('update', ['cast_member' => $this->getFactoryModel()->id]);
+        $this->setRoute('update', ['video' => $this->getFactoryModel()->id]);
         $this->assertInvalidationDataByAttribute('PUT');
     }
-
+    
     public function assertInvalidationRequired($method)
     {   
         $data = [
-            'name' => '',
-            'type' => '',
+            'title' => '',
+            'description' => '',
+            'year_launched' => '',
+            'rating' => '',
+            'duration' => ''
         ];
 
         $this->assertInvalidationData(
             $method, $data, 'required'
         );
     }
-
+    
     public function assertInvalidationLength($method){
         $data = [
-            'name' => str_repeat('CM', 256)
+            'title' => str_repeat('V', 256)
         ];
         $attributeRuleReplaces = [
-            'name' => [ 'max' => 255 ]
+            'title' => [ 'max' => 255 ]
         ];
 
         $this->assertInvalidationData(
@@ -99,10 +106,12 @@ class CastMemberControllerTest extends TestCase
 
 
         $data = [
-            'name' => 'CM'
+            'title' => 'V',
+            'description' => 'Vídeo'
         ];
         $attributeRuleReplaces = [
-            'name' => [ 'min' => 3 ]
+            'title' => [ 'min' => 3 ],
+            'description' => [ 'min' => 10 ]
         ];
 
         $this->assertInvalidationData(
@@ -110,23 +119,66 @@ class CastMemberControllerTest extends TestCase
         );
     }
 
+    public function assertInvalidationBoolean($method){
+        $data = [
+            'opened' => 'v'
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'boolean'
+        );
+    }
+
+    public function assertInvalidationNumber($method){
+        $data = [
+            'duration' => 'video'
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'integer'
+        );
+    }
+
+    public function assertInvalidationDate($method){
+        $data = [
+            'year_launched' => 'video'
+        ];
+        $attributeRuleReplaces = [
+            'year_launched' => [ 'format' => 'Y' ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'date_format', $attributeRuleReplaces
+        );
+    }
+
     public function assertInvalidationInList($method){
         $data = [
-            'type' => 0
+            'rating' => 'A'
         ];
 
         $this->assertInvalidationData(
             $method, $data, 'in'
         );
     }
-
+    
     public function assertInvalidationDataByAttribute($method)
     {   
         $this->assertInvalidationRequired($method);
 
         $this->assertInvalidationLength($method);
+        
+        $this->assertInvalidationBoolean($method);
+        
+        $this->assertInvalidationNumber($method);
+
+        $this->assertInvalidationDate($method);
 
         $this->assertInvalidationInList($method);
+
+        $this->assertMissingValidationDataNotRequired(
+            $method, [], ['opened']
+        );
     }
 
     public function testSave()
@@ -134,16 +186,24 @@ class CastMemberControllerTest extends TestCase
         $data = [
             [
                 'send_data' => $this->sendData,
-                'test_data' => $this->sendData
+                'test_data' => $this->sendData + ['opened' => false]
             ],
             [
-                'send_data' => array_replace(
+                'send_data' =>  $this->sendData + ['opened' => false],
+                'test_data' =>  $this->sendData + ['opened' => false]
+            ],
+            [
+                'send_data' =>  $this->sendData + ['opened' => true],
+                'test_data' =>  $this->sendData + ['opened' => true]
+            ],
+            [
+                'send_data' =>  array_replace(
                                     $this->sendData,
-                                    ['type' => CastMember::TYPE_ACTOR]
+                                    ['rating' => Video::RATINGS[3]]
                                 ),
-                'test_data' => array_replace(
+                'test_data' =>  array_replace(
                                     $this->sendData,
-                                    ['type' => CastMember::TYPE_ACTOR]
+                                    ['rating' => Video::RATINGS[3], 'opened' => false]
                                 )
             ]
         ];
@@ -155,9 +215,10 @@ class CastMemberControllerTest extends TestCase
                 $value['test_data'] + ['deleted_at' => null]
             );
 
-            $this->setRoute('update', ['cast_member' => $this->getRequestId()]);
+            $this->setRoute('update', ['video' => $this->getRequestId()]);
             $update_data = array_replace(
-                $value['send_data'], ['name' => 'Updating cast member']
+                $value['send_data'],
+                ['title' => 'Updating title']
             );
             $this->assertUpdate(
                 $update_data,
@@ -178,8 +239,7 @@ class CastMemberControllerTest extends TestCase
 
     public function testDestroy()
     {
-        $this->setRoute('destroy', ['cast_member' => $this->getFactoryModel()->id]);
+        $this->setRoute('destroy', ['video' => $this->getFactoryModel()->id]);
         $this->assertDestroy();
     }
-    
 }

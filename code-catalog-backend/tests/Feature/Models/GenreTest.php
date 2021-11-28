@@ -11,6 +11,14 @@ class GenreTest extends TestCase
 {   
     use DatabaseMigrations, FeatureModelsValidations;
 
+    private $sendData;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->sendData = [ 'name' => 'Genre Test' ];
+    }
+
     protected function model() {
        return Genre::class;
     }
@@ -30,56 +38,46 @@ class GenreTest extends TestCase
         );
     }
 
-    public function testCreate() {
-        $name = 'Category Test';
-                
-        // Validate a default create
-        $data = [ 'name' => $name ];
-        $this->assertCreate(
-            $data,
-            $data + [
-                'is_active' => true
-            ]
-        );
-
-        //Validate id is Uuid4
-        $this->assertIdIsUuid4(
-            $this->getModelCreated($data)->id
-        );
-
-        // Validate is_active false
+    public function testSave()
+    {
         $data = [
-            'name' => $name,
-            'is_active' => false
-        ];
-        $this->assertCreate($data, $data);
-
-        // Validate is_active true
-        $data = [
-            'name' => $name,
-            'is_active' => true
-        ];
-        $this->assertCreate($data, $data);
-    }
-    
-    public function testEdit() {
-        $this->assertEdit(
             [
-                'name' => 'Category old',
-                'is_active' => false
+                'send_data' => $this->sendData,
+                'test_data' => $this->sendData + ['is_active' => true]
             ],
             [
-                'name' => 'Category edited',
-                'is_active' => true
+                'send_data' => $this->sendData + ['is_active' => false],
+                'test_data' => $this->sendData + ['is_active' => false]
+            ],
+            [
+                'send_data' => $this->sendData + ['is_active' => true],
+                'test_data' => $this->sendData + ['is_active' => true]
             ]
-        );
+        ];
+
+        foreach($data as $key => $value) {
+            $this->assertCreate(
+                $value['send_data'],
+                $value['test_data'] + ['deleted_at' => null]
+            );
+
+            $update_data = array_replace(
+                $value['send_data'],
+                ['name' => 'Updating name']
+            );
+            $this->assertEdit(
+                $update_data,
+                $update_data + ['deleted_at' => null]
+            );
+
+            $this->model()::truncate();
+        }
     }
 
     public function testSoftDelete() {
-        $modelCreated = $this->getModelCreated([
-            'name' => 'Category',
-            'is_active' => false
-        ]);
+        $modelCreated = $this->getModelCreated(
+            $this->sendData + ['is_active' => true]
+        );
 
         $this->assertSoftDelete($modelCreated->id);
     }
