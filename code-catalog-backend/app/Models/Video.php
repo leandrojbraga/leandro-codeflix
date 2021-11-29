@@ -31,14 +31,24 @@ class Video extends Model
         'duration' => 'integer'
     ];
 
-    protected $with = ['categories', 'genres'];
+    protected $with = [
+        'categories', 'genres', 'content_descriptors'
+    ];
 
     public function categories() {
-        return $this->belongsToMany(Category::class)->select(array('categories.id','categories.name'));
+        return $this->belongsToMany(Category::class)
+            ->select(array('categories.id','categories.name'));
     }
 
     public function genres() {
-        return $this->belongsToMany(Genre::class)->select(array('genres.id','genres.name'));
+        return $this->belongsToMany(Genre::class)
+            ->select(array('genres.id','genres.name'));
     }
+
+    public function content_descriptors() {
+        return $this->belongsToMany(ContentDescriptor::class)
+            ->select(array('content_descriptors.id','content_descriptors.name'));
+    }
+    
 
 }

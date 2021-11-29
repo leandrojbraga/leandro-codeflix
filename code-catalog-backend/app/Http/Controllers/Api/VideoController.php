@@ -22,7 +22,8 @@ class VideoController extends BasicCrudController
             'rating' => 'required|in:' . implode(',', Video::RATINGS),
             'duration' => 'required|integer',
             'categories_id' => 'required|array|exists:categories,id',
-            'genres_id' => 'required|array|exists:genres,id'
+            'genres_id' => 'required|array|exists:genres,id',
+            'content_descriptors_id' => 'required|array|exists:content_descriptors,id'
         ];
     }
 
@@ -61,5 +62,6 @@ class VideoController extends BasicCrudController
     {
         $transaction->categories()->sync($request->get('categories_id'));
         $transaction->genres()->sync($request->get('genres_id'));
+        $transaction->content_descriptors()->sync($request->get('content_descriptors_id'));
     }
 }

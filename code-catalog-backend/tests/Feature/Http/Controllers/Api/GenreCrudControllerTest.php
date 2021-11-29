@@ -58,6 +58,9 @@ class GenreCrudControllerTest extends TestCase
         $data = array_replace($this->sendData, ['name' => '']);
         $this->assertInvalidationData($data);
 
+        $data = array_replace($this->sendData, ['name' => str_repeat('t', 500)]);
+        $this->assertInvalidationData($data);
+
         $data = array_replace($this->sendData, ['is_active' => 'test']);
         $this->assertInvalidationData($data);
     }

@@ -61,9 +61,10 @@ class CastMemberCrudControllerTest extends TestCase
         $data = array_replace($this->sendData, ['name' => '']);
         $this->assertInvalidationData($data);
         
-        $this->assertInvalidationData([]);
+        $data = array_replace($this->sendData, ['name' => str_repeat('t', 500)]);
+        $this->assertInvalidationData($data);
 
-        $data = array_replace($this->sendData, ['type' => 'a']);
+        $data = array_replace($this->sendData, ['type' => 'test']);
         $this->assertInvalidationData($data);
     }
 

@@ -92,3 +92,19 @@ Accept: application/json
 ###
 GET http://localhost:8000/api/videos/8ffe5cbd-d416-4f1d-bd52-ced2c0870863
 Accept: application/json
+
+
+###
+PUT http://localhost:8000/api/videos/8ffe5cbd-d416-4f1d-bd52-ced2c0870863
+Content-type: application/json
+Accept: application/json
+
+{
+    "title": "Video",
+    "description": "descricao descricao",
+    "year_launched": 1999,
+    "rating": "L",
+    "duration": 30,
+    "categories_id": ["03860e8c-3d74-4e8c-bc61-22121bb4058f","07216bc1-9423-4e54-b511-94256aaed1c6"],
+    "genres_id": ["04eb23c0-f208-48f1-a632-13a2c45625f3"]
+}

@@ -4,6 +4,7 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\VideoController;
 use App\Models\Category;
+use App\Models\ContentDescriptor;
 use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -21,6 +22,7 @@ class VideoControllerTest extends TestCase
     private $sendData;
     private $factoryCategory;
     private $factoryGenre;
+    private $factoryContentDescriptor;
     private $sendConstrains;
 
     protected function setUp(): void
@@ -37,12 +39,13 @@ class VideoControllerTest extends TestCase
         ];
         
         $this->factoryCategory = factory(Category::class)->create();
-        $this->factoryCategory->refresh();
         $this->factoryGenre = factory(Genre::class)->create();
+        $this->factoryContentDescriptor = factory(ContentDescriptor::class)->create();
 
         $this->sendConstrains = [
             'categories_id' => [$this->factoryCategory->id],
-            'genres_id' => [$this->factoryGenre->id]
+            'genres_id' => [$this->factoryGenre->id],
+            'content_descriptors_id' => [$this->factoryContentDescriptor->id]
         ];
     }
 
@@ -238,6 +241,12 @@ class VideoControllerTest extends TestCase
         $this->assertEquals(
             $this->factoryGenre->id,
             $video->genres->first()->id
+        );
+
+        $this->assertCount(1,$video->genres);
+        $this->assertEquals(
+            $this->factoryContentDescriptor->id,
+            $video->content_descriptors->first()->id
         );
     }
 
