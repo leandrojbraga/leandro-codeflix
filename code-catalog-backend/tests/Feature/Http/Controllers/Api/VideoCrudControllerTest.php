@@ -4,12 +4,12 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use Tests\TestCase;
 use App\Http\Controllers\Api\BasicCrudController;
-use Tests\Stubs\Controllers\CategoryControllerStub;
-use Tests\Stubs\Models\CategoryStub;
+use Tests\Stubs\Controllers\VideoControllerStub;
+use Tests\Stubs\Models\VideoStub;
 
 use Tests\Traits\BasicCrudControllerValidations;
 
-class CategoryCrudControllerTest extends TestCase
+class VideoCrudControllerTest extends TestCase
 {   
     use BasicCrudControllerValidations;
 
@@ -18,35 +18,36 @@ class CategoryCrudControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        CategoryStub::dropTable();
-        CategoryStub::createTable();
-        $this->controller = new CategoryControllerStub();
+        VideoStub::dropTable();
+        VideoStub::createTable();
+        $this->controller = new VideoControllerStub();
         $this->reflectionClass = new \ReflectionClass(BasicCrudController::class);
         $this->sendData = [
-            'name' => 'test name',
-            'description' => 'test description'
+            'title' => 'Video title',
+            'year_launched' => 2020,
+            'rating' => VideoStub::RATING_GENERAL_AUDIENCE
         ];
     }
     
     protected function tearDown(): void
     {
-        CategoryStub::dropTable();
+        VideoStub::dropTable();
         parent::tearDown();
     }
 
     public function getNewModelStub()
     {
-        return CategoryStub::create($this->sendData);
+        return VideoStub::create($this->sendData);
     }
 
     public function model()
     {
-        return CategoryStub::class;
+        return VideoStub::class;
     }
 
     public function getFindModelStubArray($id)
     {
-        return CategoryStub::find($id)->toArray();
+        return VideoStub::find($id)->toArray();
     }
 
     public function testIndex()
@@ -58,16 +59,33 @@ class CategoryCrudControllerTest extends TestCase
     {   
         $this->assertInvalidationData([]);
 
-        $data = array_replace($this->sendData, ['name' => '']);
+        $data = array_replace($this->sendData, ['title' => '']);
         $this->assertInvalidationData($data);
 
-        $data = array_replace($this->sendData, ['name' => str_repeat('t', 500)]);
+        $data = array_replace($this->sendData, ['title' => str_repeat('t', 500)]);
+        $this->assertInvalidationData($data);
+        
+        $data = array_replace($this->sendData, ['year_launched' => null]);
+        $this->assertInvalidationData($data);
+
+        $data = array_replace($this->sendData, ['year_launched' => 99]);
+        $this->assertInvalidationData($data);
+
+        $data = array_replace($this->sendData, ['rating' => '']);
+        $this->assertInvalidationData($data);
+
+        $data = array_replace($this->sendData, ['rating' => 'a']);
+        $this->assertInvalidationData($data);
+
+        $data = $this->sendData + ['opened' => 'b'];
         $this->assertInvalidationData($data);
     }
 
     public function testStore()
     {   
-        $this->assertStore($this->sendData);
+        $this->assertStore(
+            $this->sendData + ['opened' => true]
+        );
     }
 
     public function testIFFindOrFailFetchModel()

@@ -17,4 +17,13 @@ class Genre extends Model
     protected $casts = [
         'is_active' => 'boolean'
     ];
+
+    protected $with = [
+        'categories'
+    ];
+
+    public function categories() {
+        return $this->belongsToMany(Category::class)
+            ->select(array('categories.id','categories.name'));
+    }
 }

@@ -6,19 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CastMemberStub extends Model
+class VideoStub extends Model
 {   
-    const TYPE_DIRECTOR = 1;
-    
-    protected static $tableName = 'cast_member_stubs';
-    protected $table = 'cast_member_stubs';
-    protected $fillable = ['name', 'type'];
+    const RATING_GENERAL_AUDIENCE = 'L';
+
+    protected static $tableName = 'video_stubs';
+    protected $table = 'video_stubs';
+    protected $fillable = [
+        'title', 'year_launched', 'opened', 'rating'
+    ];
     
     public static function createTable() {
         Schema::create(self::$tableName, function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name');
-            $table->smallInteger('type');
+            $table->string('title');
+            $table->smallInteger('year_launched');
+            $table->boolean('opened')->default(false);
+            $table->string('rating', 2);
             $table->timestamps();
         });
     }
@@ -28,3 +32,4 @@ class CastMemberStub extends Model
     }
 
 }
+

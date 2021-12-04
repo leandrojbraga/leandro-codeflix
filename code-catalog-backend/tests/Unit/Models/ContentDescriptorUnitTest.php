@@ -2,23 +2,23 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\CastMember;
+use App\Models\ContentDescriptor;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPUnit\Framework\TestCase;
 use Tests\Traits\UnitModelsValidations;
 
-class CastMemberTest extends TestCase
+class ContentDescriptorUnitTest extends TestCase
 {
     use UnitModelsValidations;
 
     protected function model() {
-        return (new CastMember());
+        return (new ContentDescriptor());
     }
 
     public function testFillableAttributes() {        
         $this->assertFillableAttributes(
-            ['name', 'type']
+            ['name']
         );
     }
 
@@ -29,24 +29,16 @@ class CastMemberTest extends TestCase
     }
 
     public function testTypeKey() {
-        $this->assertTypeKey(
-            'string'
-        );
+        $this->assertTypeKey('string');
     }
 
     public function testIncrementing() {
         $this->assertIncrementingFalse();
     }
 
-    public function testCastsAttributes() {
-        $this->assertCastsAttributes(
-            ['type']
-        );
-    }
-
     public function testUseAllTraits() {
         $this->assertUseAllTraits(
-            [ SoftDeletes::class, Uuid::class ]
+            [ SoftDeletes::class, Uuid::class]
         );
     }
 }

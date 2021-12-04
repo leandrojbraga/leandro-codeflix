@@ -10,7 +10,7 @@ class CategoryController extends BasicCrudController
         return Category::class;
     }
 
-    protected function validationRules() {
+    protected function validationRules($request) {
         return [
             'name' => 'required|min:3|max:255',
             'description' => 'nullable',

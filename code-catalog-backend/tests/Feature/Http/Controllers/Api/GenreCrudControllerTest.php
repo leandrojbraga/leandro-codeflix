@@ -13,6 +13,8 @@ class GenreCrudControllerTest extends TestCase
 {   
     use BasicCrudControllerValidations;
 
+    private $sendData;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -20,6 +22,7 @@ class GenreCrudControllerTest extends TestCase
         GenreStub::createTable();
         $this->controller = new GenreControllerStub();
         $this->reflectionClass = new \ReflectionClass(BasicCrudController::class);
+        $this->sendData = ['name' => 'test name'];
     }
     
     protected function tearDown(): void
@@ -30,9 +33,7 @@ class GenreCrudControllerTest extends TestCase
 
     public function getNewModelStub()
     {
-        return GenreStub::create(
-            ['name' => 'test name', 'is_active' => true]
-        );
+        return GenreStub::create($this->sendData);
     }
 
     public function model()
@@ -52,13 +53,23 @@ class GenreCrudControllerTest extends TestCase
 
     public function testInvalidationData()
     {   
-        $this->assertInvalidationData(['name' => '']);
-        $this->assertInvalidationData(['name' => 'test name', 'is_active' => 'test']);
+        $this->assertInvalidationData([]);
+
+        $data = array_replace($this->sendData, ['name' => '']);
+        $this->assertInvalidationData($data);
+
+        $data = array_replace($this->sendData, ['name' => str_repeat('t', 500)]);
+        $this->assertInvalidationData($data);
+
+        $data = array_replace($this->sendData, ['is_active' => 'test']);
+        $this->assertInvalidationData($data);
     }
 
     public function testStore()
     {   
-        $this->assertStore(['name' => 'test name', 'is_active' => false]);
+        $this->assertStore(
+            $this->sendData + ['is_active' => false]
+        );
     }
 
     public function testIFFindOrFailFetchModel()

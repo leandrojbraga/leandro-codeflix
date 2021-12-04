@@ -4,12 +4,12 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use Tests\TestCase;
 use App\Http\Controllers\Api\BasicCrudController;
-use Tests\Stubs\Controllers\CategoryControllerStub;
-use Tests\Stubs\Models\CategoryStub;
+use Tests\Stubs\Controllers\ContentDescriptorControllerStub;
+use Tests\Stubs\Models\ContentDescriptorStub;
 
 use Tests\Traits\BasicCrudControllerValidations;
 
-class CategoryCrudControllerTest extends TestCase
+class ContentDescriptorCrudControllerTest extends TestCase
 {   
     use BasicCrudControllerValidations;
 
@@ -18,35 +18,32 @@ class CategoryCrudControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        CategoryStub::dropTable();
-        CategoryStub::createTable();
-        $this->controller = new CategoryControllerStub();
+        ContentDescriptorStub::dropTable();
+        ContentDescriptorStub::createTable();
+        $this->controller = new ContentDescriptorControllerStub();
         $this->reflectionClass = new \ReflectionClass(BasicCrudController::class);
-        $this->sendData = [
-            'name' => 'test name',
-            'description' => 'test description'
-        ];
+        $this->sendData = ['name' => 'test name'];
     }
     
     protected function tearDown(): void
     {
-        CategoryStub::dropTable();
+        ContentDescriptorStub::dropTable();
         parent::tearDown();
     }
 
     public function getNewModelStub()
     {
-        return CategoryStub::create($this->sendData);
+        return ContentDescriptorStub::create($this->sendData);
     }
 
     public function model()
     {
-        return CategoryStub::class;
+        return ContentDescriptorStub::class;
     }
 
     public function getFindModelStubArray($id)
     {
-        return CategoryStub::find($id)->toArray();
+        return ContentDescriptorStub::find($id)->toArray();
     }
 
     public function testIndex()

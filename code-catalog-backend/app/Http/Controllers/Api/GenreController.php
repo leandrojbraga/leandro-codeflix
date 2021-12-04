@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
 use App\Models\Genre;
 
 class GenreController extends BasicCrudController
@@ -10,10 +11,16 @@ class GenreController extends BasicCrudController
         return Genre::class;
     }
 
-    protected function validationRules() {
+    protected function validationRules($request) {
         return [
             'name' => 'required|min:3|max:255',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'categories_id' => 'required|array|exists:categories,id',
         ];
+    }
+
+    protected function handleRelations($transaction, Request $request)
+    {
+        $transaction->categories()->sync($request->get('categories_id'));
     }
 }

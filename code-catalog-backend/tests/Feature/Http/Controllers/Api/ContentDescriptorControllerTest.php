@@ -2,13 +2,14 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
-use App\Models\CastMember;
+use App\Models\ContentDescriptor;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Tests\Traits\FeatureHttpValidations;
 
-class CastMemberControllerTest extends TestCase
+class ContentDescriptorControllerTest extends TestCase
 { 
+
     use DatabaseMigrations, FeatureHttpValidations;
     
     private $factoryModel;
@@ -19,14 +20,11 @@ class CastMemberControllerTest extends TestCase
     {
         parent::setUp();
         $this->setFactoryModel();
-        $this->sendData = [ 
-            'name' => 'CastMember name',
-            'type' => CastMember::TYPE_DIRECTOR
-        ];
+        $this->sendData = [ 'name' => 'Content descriptor' ];
     }
 
     protected function model() {
-        return CastMember::class;
+        return ContentDescriptor::class;
     }
 
     protected function setFactoryModel() {
@@ -39,7 +37,7 @@ class CastMemberControllerTest extends TestCase
     }
 
     protected function setRoute(string $routeSuffix, array $params = []) {
-        $routePrefix = "cast-members";
+        $routePrefix = "content-descriptors";
         $this->route = route($routePrefix.'.'.$routeSuffix, $params);
     }
 
@@ -55,10 +53,10 @@ class CastMemberControllerTest extends TestCase
 
     public function testShow()
     {   
-        $this->setRoute('show', ['cast_member' => $this->getFactoryModel()->id]);
+        $this->setRoute('show', ['content_descriptor' => $this->getFactoryModel()->id]);
         $this->assertShow();
 
-        $this->setRoute('show', ['cast_member' => 0]);
+        $this->setRoute('show', ['content_descriptor' => 0]);
         $this->assertShowNotFound();
     }
     
@@ -69,15 +67,13 @@ class CastMemberControllerTest extends TestCase
         $this->assertInvalidationDataByAttribute('POST');
 
         // Test update
-        $this->setRoute('update', ['cast_member' => $this->getFactoryModel()->id]);
+        $this->setRoute('update', ['content_descriptor' => $this->getFactoryModel()->id]);
         $this->assertInvalidationDataByAttribute('PUT');
     }
 
-    public function assertInvalidationRequired($method)
-    {   
+    public function assertInvalidationRequired($method) {   
         $data = [
-            'name' => '',
-            'type' => '',
+            'name' => ''
         ];
 
         $this->assertInvalidationData(
@@ -85,12 +81,12 @@ class CastMemberControllerTest extends TestCase
         );
     }
 
-    public function assertInvalidationLength($method){
+    public function assertInvalidationLength($method) {
         $data = [
-            'name' => str_repeat('CM', 256)
+            'name' => str_repeat('C', 51)
         ];
         $attributeRuleReplaces = [
-            'name' => [ 'max' => 255 ]
+            'name' => [ 'max' => 50 ]
         ];
 
         $this->assertInvalidationData(
@@ -99,7 +95,7 @@ class CastMemberControllerTest extends TestCase
 
 
         $data = [
-            'name' => 'CM'
+            'name' => 'C'
         ];
         $attributeRuleReplaces = [
             'name' => [ 'min' => 3 ]
@@ -110,23 +106,11 @@ class CastMemberControllerTest extends TestCase
         );
     }
 
-    public function assertInvalidationInList($method){
-        $data = [
-            'type' => 0
-        ];
-
-        $this->assertInvalidationData(
-            $method, $data, 'in'
-        );
-    }
-
     public function assertInvalidationDataByAttribute($method)
     {   
         $this->assertInvalidationRequired($method);
 
         $this->assertInvalidationLength($method);
-
-        $this->assertInvalidationInList($method);
     }
 
     public function testSave()
@@ -135,16 +119,6 @@ class CastMemberControllerTest extends TestCase
             [
                 'send_data' => $this->sendData,
                 'test_data' => $this->sendData
-            ],
-            [
-                'send_data' => array_replace(
-                                    $this->sendData,
-                                    ['type' => CastMember::TYPE_ACTOR]
-                                ),
-                'test_data' => array_replace(
-                                    $this->sendData,
-                                    ['type' => CastMember::TYPE_ACTOR]
-                                )
             ]
         ];
 
@@ -155,9 +129,10 @@ class CastMemberControllerTest extends TestCase
                 $value['test_data'] + ['deleted_at' => null]
             );
 
-            $this->setRoute('update', ['cast_member' => $this->getRequestId()]);
+            $this->setRoute('update', ['content_descriptor' => $this->getRequestId()]);
             $update_data = array_replace(
-                $value['send_data'], ['name' => 'Updating cast member']
+                $value['send_data'],
+                ['name' => 'Updating content']
             );
             $this->assertUpdate(
                 $update_data,
@@ -179,7 +154,7 @@ class CastMemberControllerTest extends TestCase
 
     public function testDestroy()
     {
-        $this->setRoute('destroy', ['cast_member' => $this->getFactoryModel()->id]);
+        $this->setRoute('destroy', ['content_descriptor' => $this->getFactoryModel()->id]);
         $this->assertDestroy();
     }
     

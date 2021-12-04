@@ -11,6 +11,17 @@ class CastMemberTest extends TestCase
 {
     use DatabaseMigrations, FeatureModelsValidations;
 
+    private $sendData;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->sendData = [ 
+            'name' => 'CastMember Test',
+            'type' => CastMember::TYPE_DIRECTOR
+        ];
+    }
+
     protected function model() {
        return CastMember::class;
     }
@@ -30,44 +41,54 @@ class CastMemberTest extends TestCase
         );
     }
 
-    public function testCreate() {
-        $name = 'CastMember Test';
-        $type = 1;
-                
-        // Validate a default create
-        $data = [ 
-            'name' => $name,
-            'type' => $type
-        ];
-        $this->assertCreate(
-            $data,
-            $data
-        );
-
-        //Validate id is Uuid4
-        $this->assertIdIsUuid4(
-            $this->getModelCreated($data)->id
-        );
-    }
-    
-    public function testEdit() {
-        $this->assertEdit(
+    public function testSave()
+    {
+        $data = [
             [
-                'name' => 'CastMember old',
-                'type' => 1
+                'send_data' => $this->sendData,
+                'test_data' => $this->sendData
             ],
             [
-                'name' => 'CastMember edited',
-                'type' => 2
+                'send_data' => array_replace(
+                                    $this->sendData,
+                                    ['type' => CastMember::TYPE_ACTOR]
+                                ),
+                'test_data' => array_replace(
+                                    $this->sendData,
+                                    ['type' => CastMember::TYPE_ACTOR]
+                                )
             ]
+        ];
+
+        foreach($data as $key => $value) {
+            $this->assertCreate(
+                $value['send_data'],
+                $value['test_data'] + ['deleted_at' => null]
+            );
+
+            $update_data = array_replace(
+                $value['send_data'],
+                ['name' => 'Updating name']
+            );
+            $this->assertEdit(
+                $update_data,
+                $update_data + ['deleted_at' => null]
+            );
+
+            $model = $this->model()::all()->first();
+            $model->delete();
+        }
+    }
+
+    public function testUuid4()
+    {
+        $this->assertIdIsUuid4(
+            $this->getModelCreated($this->sendData)->id
         );
     }
 
     public function testSoftDelete() {
-        $modelCreated = $this->getModelCreated([
-            'name' => 'CastMember',
-            'type' => 1
-        ]);
+        $modelCreated = $this->getModelCreated($this->sendData);
 
         $this->assertSoftDelete($modelCreated->id);
     }

@@ -2,24 +2,29 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\Genre;
+use App\Models\Video;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPUnit\Framework\TestCase;
 use Tests\Traits\UnitModelsValidations;
 
-class GenreTest extends TestCase
+class VideoUnitTest extends TestCase
 {
     use UnitModelsValidations;
 
     protected function model() {
-        return (new Genre());
+        return (new Video());
     }
 
     public function testFillableAttributes() {        
         $this->assertFillableAttributes(
-            ['name', 'is_active']
-        );
+            ['title',
+            'description',
+            'year_launched',
+            'opened',
+            'rating',
+            'duration'
+        ]);
     }
 
     public function testDatesAttributes() {   
@@ -29,7 +34,9 @@ class GenreTest extends TestCase
     }
 
     public function testTypeKey() {
-        $this->assertTypeKey('string');
+        $this->assertTypeKey(
+            'string'
+        );
     }
 
     public function testIncrementing() {
@@ -38,13 +45,13 @@ class GenreTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['is_active']
+            ['opened', 'year_launched', 'duration']
         );
     }
 
     public function testUseAllTraits() {
         $this->assertUseAllTraits(
-            [ SoftDeletes::class, Uuid::class]
+            [ SoftDeletes::class, Uuid::class ]
         );
     }
 }

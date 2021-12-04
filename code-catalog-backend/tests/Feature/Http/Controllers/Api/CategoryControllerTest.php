@@ -13,11 +13,13 @@ class CategoryControllerTest extends TestCase
 
     private $factoryModel;
     private $route;
+    private $sendData;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->setFactoryModel();
+        $this->sendData = [ 'name' => 'Category name' ];
     }
 
     protected function model() {
@@ -68,46 +70,58 @@ class CategoryControllerTest extends TestCase
         $this->assertInvalidationDataByAttribute('PUT');
     }
     
+    public function assertInvalidationRequired($method) {   
+        $data = [
+            'name' => ''
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'required'
+        );
+    }
+
+    public function assertInvalidationLength($method) {
+        $data = [
+            'name' => str_repeat('C', 256)
+        ];
+        $attributeRuleReplaces = [
+            'name' => [ 'max' => 255 ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'max.string', $attributeRuleReplaces
+        );
+
+
+        $data = [
+            'name' => 'C'
+        ];
+        $attributeRuleReplaces = [
+            'name' => [ 'min' => 3 ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'min.string', $attributeRuleReplaces
+        );
+    }
+
+    public function assertInvalidationBoolean($method){
+        $data = [
+            'is_active' => 'c'
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'boolean'
+        );
+    }
+
     public function assertInvalidationDataByAttribute($method)
     {   
-        $validateAttributes = [
-            [   'attribute' => 'name',
-                'content' => [],
-                'validation' => [
-                    'key' => 'required',
-                    'replace' => []
-                ]
-            ],
-            [   'attribute' => 'name',
-                'content' => ['name' => str_repeat('C', 256)],
-                'validation' => [
-                    'key' => 'max.string',
-                    'replace' => [ 'max' => 255 ]
-                ]
-            ],
-            [   'attribute' => 'name',
-                'content' => ['name' => 'C'],
-                'validation' => [
-                    'key' => 'min.string',
-                    'replace' => [ 'min' => 3 ]
-                ]
-            ],
-            [   'attribute' => 'is_active',
-                'content' => ['name' => 'Category', 'is_active' => 'C'],
-                'validation' => [
-                    'key' => 'boolean',
-                    'replace' => []
-                ]
-            ]
-        ];
-        foreach($validateAttributes as $validateAttribute) {
-            $this->assertInvalidationData(
-                $method,
-                $validateAttribute['content'],
-                $validateAttribute['attribute'],
-                (object) $validateAttribute['validation']
-            );
-        }
+        $this->assertInvalidationRequired($method);
+
+        $this->assertInvalidationLength($method);
+
+        $this->assertInvalidationBoolean($method);
 
         $this->assertMissingValidationDataNotRequired(
             $method,
@@ -116,79 +130,64 @@ class CategoryControllerTest extends TestCase
         );
     }
 
-    public function testStore()
+    public function testSave()
     {
-        $name = 'Category Test';
-        $description = 'Category test description';
-        
-        $this->setRoute('store');
-
-        // Validate a default create
-        $data = [ 'name' => $name ];
-        $this->assertStore(
-            $data,
-            $data + [
-                'description' => null,
-                'is_active' => true
+        $data = [
+            [
+                'send_data' => $this->sendData,
+                'test_data' => $this->sendData + [ 'description' => null,
+                                                'is_active' => true]
             ],
-            true
-        );
-
-        //Validate id is Uuid4
-        $this->assertIdIsUuid4($this->getRequestId());
-
-        // Validate description null
-        $data = [
-            'name' => $name,
-            'description' => '',
+            [
+                'send_data' => $this->sendData + ['description' => null],
+                'test_data' => $this->sendData + ['description' => null]
+            ],
+            [
+                'send_data' => $this->sendData + ['description' => 'test description'],
+                'test_data' => $this->sendData + ['description' => 'test description']
+            ],
+            [
+                'send_data' => $this->sendData + ['description' => 'test description'],
+                'test_data' => $this->sendData + ['description' => 'test description']
+            ],
+            [
+                'send_data' => $this->sendData + ['is_active' => false],
+                'test_data' => $this->sendData + ['is_active' => false]
+            ],
+            [
+                'send_data' => $this->sendData + ['is_active' => true],
+                'test_data' => $this->sendData + ['is_active' => true]
+            ],
         ];
-        $this->assertStore(
-            $data,
-            [   
-                'description' => null
-            ]
-        );
 
-        // Validate description NOT null
-        $data = [
-            'name' => $name,
-            'description' => $description
-        ];
-        $this->assertStore($data, $data);
+        foreach($data as $key => $value) {
+            $this->setRoute('store');
+            $this->assertStore(
+                $value['send_data'],
+                $value['test_data'] + ['deleted_at' => null]
+            );
 
-        // Validate is_active false
-        $data = [
-            'name' => $name,
-            'is_active' => false
-        ];
-        $this->assertStore($data, $data);
+            $this->setRoute('update', ['category' => $this->getRequestId()]);
+            $update_data = array_replace(
+                $value['send_data'],
+                ['name' => 'Updating category']
+            );
+            $this->assertUpdate(
+                $update_data,
+                $update_data + ['deleted_at' => null]
+            );
 
-        // Validate is_active true
-        $data = [
-            'name' => $name,
-            'is_active' => true
-        ];
-        $this->assertStore($data, $data);
+            $model = $this->model()::find($this->getRequestId());
+            $model->delete();
+        }
     }
 
-    public function testUpdate()
+    public function testUuid4()
     {
-        $this->setRoute('update', ['category' => $this->getFactoryModel()->id]);
+        $this->setRoute('store');
+        $this->assertStore($this->sendData, $this->sendData);
 
-        $this->assertUpdate(
-            [   
-                'name' => 'Category Test',
-                'description' => 'Category test description',
-                'is_active' => false
-            ]
-        );
-
-        $this->assertUpdate(
-            [   
-                'name' => 'Category',
-                'description' => null
-            ]
-        );
+        $this->assertIdIsUuid4($this->getRequestId());
     }
 
     public function testDestroy()

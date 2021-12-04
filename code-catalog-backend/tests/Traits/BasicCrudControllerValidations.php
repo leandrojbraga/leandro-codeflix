@@ -21,6 +21,7 @@ trait BasicCrudControllerValidations
     public function assertIndex()
     {
         $model = $this->getNewModelStub();
+        $model->refresh();
 
         $this->assertEquals(
             [$model->toArray()],
@@ -97,9 +98,9 @@ trait BasicCrudControllerValidations
 
         $obj = $this->controller->destroy($model->id);
         
-        $this->assertEquals(
-            Response::HTTP_NO_CONTENT,
-            $obj->getStatusCode()
-        );
+        $this->createTestResponse($obj)
+            ->assertStatus(Response::HTTP_NO_CONTENT);
+
+        $this->assertCount(0, (new $model())::all());
     }
 }

@@ -5,16 +5,18 @@ namespace App\Models;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Enums\CastMemberType;
 
 
 class CastMember extends Model
 {
     use SoftDeletes, Uuid;
 
-    public const TYPES = [
-        1 => 'Diretor',
-        2 => 'Actor'
+    const TYPE_DIRECTOR = 1;
+    const TYPE_ACTOR = 2;
+    
+    const TYPES = [
+        self::TYPE_DIRECTOR => 'Diretor',
+        self::TYPE_ACTOR => 'Actor'
     ];
 
     public $incrementing = false;
@@ -33,17 +35,4 @@ class CastMember extends Model
     {
         $this->attributes['type'] = $type;
     }
-
-    
-    // public static function getTypeAttribute($type)
-    // {
-    //    return array_search($type, self::TYPES);
-    // }
-
-    // public function getTypeAttribute()
-    // {
-    //    return self::TYPES[ $this->attributes['type'] ];
-    // }
-
-
 }

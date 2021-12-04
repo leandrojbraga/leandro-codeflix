@@ -3,18 +3,17 @@
 namespace Tests\Stubs\Controllers;
 
 use App\Http\Controllers\Api\BasicCrudController;
-use Tests\Stubs\Models\CategoryStub;
+use Tests\Stubs\Models\ContentDescriptorStub;
 
-class CategoryControllerStub extends BasicCrudController
+class ContentDescriptorControllerStub extends BasicCrudController
 {
     protected function model() {
-        return CategoryStub::class;
+        return ContentDescriptorStub::class;
     }
 
     protected function validationRules($request) {
         return [
-            'name' => 'required|max:255',
-            'description' => 'nullable'
+            'name' => 'required|max:100'
         ];
     }
 

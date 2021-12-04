@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Models;
 
-use App\Models\Genre;
+use App\Models\ContentDescriptor;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Tests\Traits\FeatureModelsValidations;
 
-class GenreTest extends TestCase
+class ContentDescriptorTest extends TestCase
 {   
     use DatabaseMigrations, FeatureModelsValidations;
 
@@ -16,11 +16,11 @@ class GenreTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->sendData = [ 'name' => 'Genre Test' ];
+        $this->sendData = [ 'name' => 'Content Descriptor' ];
     }
 
     protected function model() {
-       return Genre::class;
+       return ContentDescriptor::class;
     }
 
     public function testList()
@@ -32,7 +32,7 @@ class GenreTest extends TestCase
     {   
         $this->assertAttributes(
             [
-                'id', 'name', 'is_active',
+                'id', 'name',
                 'created_at', 'updated_at', 'deleted_at'
             ]
         );
@@ -43,15 +43,7 @@ class GenreTest extends TestCase
         $data = [
             [
                 'send_data' => $this->sendData,
-                'test_data' => $this->sendData + ['is_active' => true]
-            ],
-            [
-                'send_data' => $this->sendData + ['is_active' => false],
-                'test_data' => $this->sendData + ['is_active' => false]
-            ],
-            [
-                'send_data' => $this->sendData + ['is_active' => true],
-                'test_data' => $this->sendData + ['is_active' => true]
+                'test_data' => $this->sendData
             ]
         ];
 
@@ -84,7 +76,7 @@ class GenreTest extends TestCase
 
     public function testSoftDelete() {
         $modelCreated = $this->getModelCreated(
-            $this->sendData + ['is_active' => true]
+            $this->sendData
         );
 
         $this->assertSoftDelete($modelCreated->id);

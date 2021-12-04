@@ -3,7 +3,7 @@ php artisan make:model Models/CastMember --all
 
 
 # Criar seeder
-php artisan make:seeder CastMembersSeeder
+php artisan make:seeder ContentDescriptorsSeeder
 
 
 # Criar request validate

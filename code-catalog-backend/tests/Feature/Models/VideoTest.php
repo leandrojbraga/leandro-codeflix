@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Models;
 
-use App\Models\Genre;
+use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Tests\Traits\FeatureModelsValidations;
 
-class GenreTest extends TestCase
+class VideoTest extends TestCase
 {   
     use DatabaseMigrations, FeatureModelsValidations;
 
@@ -16,11 +16,17 @@ class GenreTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->sendData = [ 'name' => 'Genre Test' ];
+        $this->sendData = [
+            'title' => 'Video title',
+            'description' => 'Video description',
+            'year_launched' => 2020,
+            'rating' => Video::RATINGS[0],
+            'duration' => 90
+        ];
     }
 
     protected function model() {
-       return Genre::class;
+       return Video::class;
     }
 
     public function testList()
@@ -32,7 +38,8 @@ class GenreTest extends TestCase
     {   
         $this->assertAttributes(
             [
-                'id', 'name', 'is_active',
+                'id', 'title', 'description', 'year_launched',
+                'opened', 'rating', 'duration',
                 'created_at', 'updated_at', 'deleted_at'
             ]
         );
@@ -43,15 +50,26 @@ class GenreTest extends TestCase
         $data = [
             [
                 'send_data' => $this->sendData,
-                'test_data' => $this->sendData + ['is_active' => true]
+                'test_data' => $this->sendData + ['opened' => false]
             ],
             [
-                'send_data' => $this->sendData + ['is_active' => false],
-                'test_data' => $this->sendData + ['is_active' => false]
+                'send_data' =>  $this->sendData + ['opened' => false],
+                'test_data' =>  $this->sendData + ['opened' => false]
             ],
             [
-                'send_data' => $this->sendData + ['is_active' => true],
-                'test_data' => $this->sendData + ['is_active' => true]
+                'send_data' =>  $this->sendData + ['opened' => true],
+                'test_data' =>  $this->sendData + ['opened' => true]
+            ],
+            [
+                'send_data' =>  array_replace(
+                                    $this->sendData,
+                                    ['rating' => Video::RATINGS[3]]
+                                ),
+                'test_data' =>  array_replace(
+                                    $this->sendData,
+                                    ['rating' => Video::RATINGS[3],
+                                        'opened' => false]
+                                )
             ]
         ];
 
@@ -63,13 +81,14 @@ class GenreTest extends TestCase
 
             $update_data = array_replace(
                 $value['send_data'],
-                ['name' => 'Updating name']
+                ['title' => 'Updating title']
             );
             $this->assertEdit(
                 $update_data,
                 $update_data + ['deleted_at' => null]
             );
 
+            
             $model = $this->model()::all()->first();
             $model->delete();
         }

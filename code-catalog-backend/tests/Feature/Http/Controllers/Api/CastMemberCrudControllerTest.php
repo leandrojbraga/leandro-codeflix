@@ -13,6 +13,8 @@ class CastMemberCrudControllerTest extends TestCase
 {   
     use BasicCrudControllerValidations;
 
+    private $sendData;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -20,6 +22,10 @@ class CastMemberCrudControllerTest extends TestCase
         CastMemberStub::createTable();
         $this->controller = new CastMemberControllerStub();
         $this->reflectionClass = new \ReflectionClass(BasicCrudController::class);
+        $this->sendData = [
+            'name' => 'test name',
+            'type' => CastMemberStub::TYPE_DIRECTOR
+        ];
     }
     
     protected function tearDown(): void
@@ -30,9 +36,7 @@ class CastMemberCrudControllerTest extends TestCase
 
     public function getNewModelStub()
     {
-        return CastMemberStub::create(
-            ['name' => 'test name', 'type' => 1]
-        );
+        return CastMemberStub::create($this->sendData);
     }
 
     public function model()
@@ -52,16 +56,21 @@ class CastMemberCrudControllerTest extends TestCase
 
     public function testInvalidationData()
     {   
-        $data = ['name' => '', 'type' => 1];
+        $this->assertInvalidationData([]);
+
+        $data = array_replace($this->sendData, ['name' => '']);
         $this->assertInvalidationData($data);
         
-        $data = ['name' => 'test name'];
+        $data = array_replace($this->sendData, ['name' => str_repeat('t', 500)]);
+        $this->assertInvalidationData($data);
+
+        $data = array_replace($this->sendData, ['type' => 'test']);
         $this->assertInvalidationData($data);
     }
 
     public function testStore()
     {   
-        $this->assertStore(['name' => 'test name', 'type' => 1]);
+        $this->assertStore($this->sendData);
     }
 
     public function testIFFindOrFailFetchModel()
