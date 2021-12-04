@@ -12,8 +12,8 @@ Content-type: application/json
 Accept: application/json
 
 {
-    "name": "Categoria inativa 3",
-    "description": "outra categoria foi desativada 1"
+    "name": "Categoria 1",
+    "description": "Categoria 1"
 }
 
 
@@ -47,13 +47,13 @@ Accept: application/json
 
 
 ###
-POST http://localhost:8000/api/cast-members/
+POST http://localhost:8000/api/genres/
 Content-type: application/json
 Accept: application/json
 
 {
-    "name": "Leandro2",
-    "type": 3
+    "name": "Genre 1",
+    "categories_id" : ["8f756e1a-dc11-4197-b66d-63b311788608"]
 }
 
 
@@ -82,15 +82,16 @@ Accept: application/json
 {
     "title": "Video",
     "description": "descricao descricao",
-    "year_launched": 1999,
+    "year_launched": 1998,
     "rating": "L",
     "duration": 30,
-    "categories_id": ["03860e8c-3d74-4e8c-bc61-22121bb4058f","07216bc1-9423-4e54-b511-94256aaed1c6"],
-    "genres_id": ["04eb23c0-f208-48f1-a632-13a2c45625f3"]
+    "categories_id": ["0056fc12-267c-49c8-8acb-832edf864f0", "8f756e1a-dc11-4197-b66d-63b311788608"],
+    "genres_id": ["0045ef59-f7e7-4a0a-9601-a8bdc497739","296ec505-27df-4c59-8c78-d36b9080c4bc"],
+    "content_descriptors_id": ["0b30fa7b-1a08-42ec-bdcf-acc608bba5a"]
 }
 
 ###
-GET http://localhost:8000/api/videos/8ffe5cbd-d416-4f1d-bd52-ced2c0870863
+GET http://localhost:8000/api/content-descriptors
 Accept: application/json
 
 

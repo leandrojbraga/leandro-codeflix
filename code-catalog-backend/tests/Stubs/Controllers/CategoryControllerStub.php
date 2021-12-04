@@ -11,7 +11,7 @@ class CategoryControllerStub extends BasicCrudController
         return CategoryStub::class;
     }
 
-    protected function validationRules() {
+    protected function validationRules($request) {
         return [
             'name' => 'required|max:255',
             'description' => 'nullable'

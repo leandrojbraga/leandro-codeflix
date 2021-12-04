@@ -11,7 +11,7 @@ class CastMemberController extends BasicCrudController
         return CastMember::class;
     }
 
-    protected function validationRules() {
+    protected function validationRules($request) {
         return [
             'name' => 'required|min:3|max:255',
             'type' => [

@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Video;
-use Exception;
+use App\Rules\CategoryRelationGenre;
+use App\Rules\GenreRelationCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+
 
 class VideoController extends BasicCrudController
 {
@@ -13,7 +14,7 @@ class VideoController extends BasicCrudController
         return Video::class;
     }
 
-    protected function validationRules() {
+    protected function validationRules($request) {
         return [
             'title' => 'required|min:3|max:255',
             'description' => 'required|min:10',
@@ -21,41 +22,10 @@ class VideoController extends BasicCrudController
             'opened' => 'boolean',
             'rating' => 'required|in:' . implode(',', Video::RATINGS),
             'duration' => 'required|integer',
-            'categories_id' => 'required|array|exists:categories,id',
-            'genres_id' => 'required|array|exists:genres,id',
+            'categories_id' => ['required', 'array', 'exists:categories,id', new CategoryRelationGenre($request->genres_id)],
+            'genres_id' => ['required', 'array', 'exists:genres,id', new GenreRelationCategory($request->categories_id)],
             'content_descriptors_id' => 'required|array|exists:content_descriptors,id'
         ];
-    }
-
-    public function store(Request $request)
-    {
-        $validateData = $this->validateRequestData($request);
-        $self = $this;
-
-        $obj= DB::transaction(function () use ($request, $validateData, $self){
-            $transaction = $this->model()::create($validateData);
-            $self->handleRelations($transaction, $request);
-            return $transaction;
-        });
-        
-        $obj->refresh();
-        return $obj;
-    }
-
-    public function update(Request $request, $id)
-    {
-        $validateData = $this->validateRequestData($request);
-        $self = $this;
-
-        $obj = DB::transaction(function () use ($request, $id, $validateData, $self)
-        {
-            $transaction = $self->findOrFail($id);
-            $transaction->update($validateData);
-            $self->handleRelations($transaction, $request);            
-            return $transaction;
-        });
-
-        return $obj;
     }
 
     protected function handleRelations($transaction, Request $request)

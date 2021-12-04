@@ -2,10 +2,14 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\GenreController;
+use App\Models\Category;
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Tests\Traits\FeatureHttpValidations;
+use Tests\Exceptions\TestException;
+use Illuminate\Http\Request;
 
 class GenreControllerTest extends TestCase
 { 
@@ -15,12 +19,20 @@ class GenreControllerTest extends TestCase
     private $factoryModel;
     private $route;
     private $sendData;
+    private $factoryCategory;
+    private $sendConstrains;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->setFactoryModel();
         $this->sendData = [ 'name' => 'Genre name' ];
+
+        $this->factoryCategory = factory(Category::class)->create();
+
+        $this->sendConstrains = [
+            'categories_id' => [$this->factoryCategory->id]
+        ];
     }
 
     protected function model() {
@@ -116,6 +128,26 @@ class GenreControllerTest extends TestCase
         );
     }
 
+    public function assertInvalidationArray($method){
+        $data = [
+            'categories_id' => 'test'
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'array'
+        );
+    }
+
+    public function assertInvalidationConstraintsExists($method){
+        $data = [
+            'categories_id' => ['test']
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'exists'
+        );
+    }
+
     public function assertInvalidationDataByAttribute($method)
     {   
         $this->assertInvalidationRequired($method);
@@ -124,6 +156,10 @@ class GenreControllerTest extends TestCase
 
         $this->assertInvalidationBoolean($method);
 
+        $this->assertInvalidationArray($method);
+
+        $this->assertInvalidationConstraintsExists($method);
+
         $this->assertMissingValidationDataNotRequired(
             $method,
             [],
@@ -131,19 +167,31 @@ class GenreControllerTest extends TestCase
         );
     }
 
+    public function assertSaveConstrains() {       
+        $genre = $this->model()::find($this->getRequestId());
+
+        $this->assertCount(1,$genre->categories);
+        $this->assertEquals(
+            $this->factoryCategory->id,
+            $genre->categories->first()->id
+        );
+    }
+
     public function testSave()
     {
         $data = [
             [   // Validate a default create
-                'send_data' => $this->sendData,
+                'send_data' => $this->sendData + $this->sendConstrains,
                 'test_data' => $this->sendData + ['is_active' => true]
             ],
             [
-                'send_data' => $this->sendData + ['is_active' => false],
+                'send_data' => $this->sendData +
+                                $this->sendConstrains + ['is_active' => false],
                 'test_data' => $this->sendData + ['is_active' => false]
             ],
             [
-                'send_data' => $this->sendData + ['is_active' => true],
+                'send_data' => $this->sendData + 
+                                $this->sendConstrains + ['is_active' => true],
                 'test_data' => $this->sendData + ['is_active' => true]
             ]
         ];
@@ -154,16 +202,22 @@ class GenreControllerTest extends TestCase
                 $value['send_data'],
                 $value['test_data'] + ['deleted_at' => null]
             );
+            $this->assertSaveConstrains();
 
             $this->setRoute('update', ['genre' => $this->getRequestId()]);
-            $update_data = array_replace(
+            $updateSendData = array_replace(
                 $value['send_data'],
-                ['name' => 'Updating genre']
+                ['name' => 'Updating name']
+            );
+            $updateTestData = array_replace(
+                $value['test_data'],
+                ['name' => 'Updating name']
             );
             $this->assertUpdate(
-                $update_data,
-                $update_data + ['deleted_at' => null]
+                $updateSendData,
+                $updateTestData + ['deleted_at' => null]
             );
+            $this->assertSaveConstrains();
 
             $model = $this->model()::find($this->getRequestId());
             $model->delete();
@@ -173,9 +227,61 @@ class GenreControllerTest extends TestCase
     public function testUuid4()
     {
         $this->setRoute('store');
-        $this->assertStore($this->sendData, $this->sendData);
+        $this->assertStore(
+            $this->sendData + $this->sendConstrains,
+            $this->sendData
+        );
 
         $this->assertIdIsUuid4($this->getRequestId());
+    }
+
+    private function mockGenreController() {
+        $controller = \Mockery::mock(GenreController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+        
+        $controller
+            ->shouldReceive('validationRules')
+            ->withAnyArgs()
+            ->andReturn([]);
+
+        $controller
+            ->shouldReceive('validateRequestData')
+            ->withAnyArgs()
+            ->andReturn($this->sendData);
+      
+
+        $controller
+            ->shouldReceive('handleRelations')
+            ->once()
+            ->andThrow(new TestException());
+        
+        return $controller;
+    }
+    
+    public function testRollback()
+    {
+        $request = \Mockery::mock(Request::class);
+
+        $controller =  $this->mockGenreController();
+        try {
+            $controller->store($request);
+        } catch (TestException $exception) {
+            $this->assertCount(1, Genre::all());
+        }
+
+        
+        $id = $this->getFactoryModel()->id;
+        $updatedAt = $this->getFactoryModel()->updated_at;
+        
+        $controller =  $this->mockGenreController();
+        try {
+            $controller->update($request, $id);
+        } catch (TestException $exception) {
+            $this->assertEquals(
+                $updatedAt,
+                Genre::find($id)->updated_at);
+        }
     }
 
     public function testDestroy()

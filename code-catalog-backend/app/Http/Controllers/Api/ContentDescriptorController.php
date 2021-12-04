@@ -10,7 +10,7 @@ class ContentDescriptorController extends BasicCrudController
         return ContentDescriptor::class;
     }
 
-    protected function validationRules() {
+    protected function validationRules($request) {
         return [
             'name' => 'required|min:3|max:50',
         ];

@@ -11,7 +11,7 @@ class ContentDescriptorControllerStub extends BasicCrudController
         return ContentDescriptorStub::class;
     }
 
-    protected function validationRules() {
+    protected function validationRules($request) {
         return [
             'name' => 'required|max:100'
         ];

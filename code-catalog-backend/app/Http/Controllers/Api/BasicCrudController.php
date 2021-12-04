@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 abstract class BasicCrudController extends Controller
 {
     protected abstract function model();
 
-    protected abstract function validationRules();
+    protected abstract function validationRules($request);
+
+    protected function handleRelations($transaction, Request $request) {}
 
     // Display a listing of the resource.
     // GET -> api/{model}/
@@ -20,7 +24,7 @@ abstract class BasicCrudController extends Controller
 
     protected function validateRequestData(Request $request)
     {
-        return $this->validate($request, $this->validationRules());
+        return $this->validate($request, $this->validationRules($request));
     }
 
     // Store a newly created resource in storage.
@@ -29,7 +33,14 @@ abstract class BasicCrudController extends Controller
     public function store(Request $request)
     {
         $validateData = $this->validateRequestData($request);
-        $obj = $this->model()::create($validateData);
+        $self = $this;
+
+        $obj= DB::transaction(function () use ($request, $validateData, $self){
+            $transaction = $this->model()::create($validateData);
+            $self->handleRelations($transaction, $request);
+            return $transaction;
+        });
+        
         $obj->refresh();
         return $obj;
     }
@@ -55,9 +66,16 @@ abstract class BasicCrudController extends Controller
     public function update(Request $request, $id)
     {
         $validateData = $this->validateRequestData($request);
-        $obj = $this->findOrFail($id);
-        $obj->update($validateData);
-        
+        $self = $this;
+
+        $obj = DB::transaction(function () use ($request, $id, $validateData, $self)
+        {
+            $transaction = $self->findOrFail($id);
+            $transaction->update($validateData);
+            $self->handleRelations($transaction, $request);            
+            return $transaction;
+        });
+
         return $obj;
     }
 

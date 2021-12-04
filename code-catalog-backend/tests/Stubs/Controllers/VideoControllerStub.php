@@ -11,7 +11,7 @@ class VideoControllerStub extends BasicCrudController
         return VideoStub::class;
     }
 
-    protected function validationRules() {
+    protected function validationRules($request) {
         return [
             'title' => 'required|max:255',
             'year_launched' => 'required|date_format:Y',

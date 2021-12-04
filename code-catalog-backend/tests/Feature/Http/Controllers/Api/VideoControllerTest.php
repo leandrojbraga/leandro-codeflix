@@ -40,6 +40,7 @@ class VideoControllerTest extends TestCase
         
         $this->factoryCategory = factory(Category::class)->create();
         $this->factoryGenre = factory(Genre::class)->create();
+        $this->factoryGenre->categories()->attach([$this->factoryCategory->id]);
         $this->factoryContentDescriptor = factory(ContentDescriptor::class)->create();
 
         $this->sendConstrains = [
@@ -188,8 +189,8 @@ class VideoControllerTest extends TestCase
     public function assertInvalidationArray($method){
         $data = [
             'categories_id' => 'test',
-            'genres_id' => 'test'
-
+            'genres_id' => 'test',
+            'content_descriptors_id' => 'test'
         ];
 
         $this->assertInvalidationData(
@@ -200,12 +201,37 @@ class VideoControllerTest extends TestCase
     public function assertInvalidationConstraintsExists($method){
         $data = [
             'categories_id' => ['test'],
-            'genres_id' => ['test']
-
+            'genres_id' => ['test'],
+            'content_descriptors_id' => ['test']
         ];
 
         $this->assertInvalidationData(
             $method, $data, 'exists'
+        );
+    }
+
+    public function assertInvalidationRelatedExists($method){
+        $categoryId = factory(Category::class)->create()->id;
+        $genreId = factory(Genre::class)->create()->id;
+        
+        $data = [
+            'categories_id' => [$categoryId],
+            'genres_id' => [$genreId]
+        ];
+
+        $attributeRuleReplaces = [
+            'categories_id' => [
+                'value' => $categoryId,
+                'relationship' => 'genre'
+            ],
+            'genres_id' => [
+                'value' => $genreId,
+                'relationship' => 'category'
+            ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'related_attribute', $attributeRuleReplaces
         );
     }
     
@@ -222,6 +248,12 @@ class VideoControllerTest extends TestCase
         $this->assertInvalidationDate($method);
 
         $this->assertInvalidationInList($method);
+
+        $this->assertInvalidationArray($method);
+
+        $this->assertInvalidationConstraintsExists($method);
+
+        $this->assertInvalidationRelatedExists($method);
 
         $this->assertMissingValidationDataNotRequired(
             $method, [], ['opened']
@@ -340,6 +372,7 @@ class VideoControllerTest extends TestCase
         
         return $controller;
     }
+
     public function testRollback()
     {
         $request = \Mockery::mock(Request::class);
