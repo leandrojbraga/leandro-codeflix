@@ -1,5 +1,5 @@
 {
-    "name": "leandro-codeflix",
+    "name": "delivery-codeflix-heroku",
     "scripts":{
         "postdeploy": "composer update && php artisan migrate --seed"
     },
@@ -34,5 +34,6 @@
         {
             "url": "heroku/php"
         }
-    ]
+    ],
+    "repository": "https://github.com/leandrojbraga/leandro-codeflix/tree/develop/code-catalog-backend"
 }
