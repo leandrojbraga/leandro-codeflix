@@ -1,7 +1,6 @@
 {
     "name": "delivery-codeflix-heroku",
     "scripts":{
-    	"predeploy": "cd code-catalog-backend/",
         "postdeploy": "composer update && php artisan migrate --seed"
     },
     "env": {
