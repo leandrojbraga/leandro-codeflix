@@ -19,6 +19,9 @@
         "DB_CONNECTION": {
             "required": true,
             "value": "mysql"
+        },
+        "PROJECT_PATH": {
+            "value": "code-catalog-backend"
         }
     },
     "formation": {
