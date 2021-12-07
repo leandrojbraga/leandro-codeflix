@@ -1,0 +1,40 @@
+{
+  "addons": [
+    "cleardb",
+    "papertrail"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/php"
+    }
+  ],
+  "env": {
+    "APP_DEBUG": {
+      "required": true
+    },
+    "APP_ENV": {
+      "required": true
+    },
+    "APP_KEY": {
+      "required": true
+    },
+    "CLEARDB_DATABASE_URL": {
+      "required": true
+    },
+    "DB_CONNECTION": {
+      "required": true
+    },
+    "PAPERTRAIL_API_TOKEN": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "name": "leandro-codeflix",
+  "scripts": {
+  },
+  "stack": "heroku-20"
+}
