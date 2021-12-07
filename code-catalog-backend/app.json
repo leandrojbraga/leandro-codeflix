@@ -1,5 +1,5 @@
 {
-    "name": "delivery-heroku",
+    "name": "delivery-codeflix-heroku",
     "scripts":{
         "postdeploy": "composer update && php artisan migrate --seed"
     },
