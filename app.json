@@ -32,7 +32,7 @@
     ],
     "buildpacks": [
         {
-            "url": "code-catalog-backend/heroku/php"
+            "url": "heroku/php"
         }
     ]
     
