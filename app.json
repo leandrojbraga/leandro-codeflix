@@ -1,40 +1,38 @@
 {
-  "addons": [
-    "cleardb",
-    "papertrail"
-  ],
-  "buildpacks": [
-    {
-      "url": "heroku/php"
-    }
-  ],
-  "env": {
-    "APP_DEBUG": {
-      "required": true
+    "name": "delivery-codeflix-heroku",
+    "scripts":{
+        "postdeploy": "composer update && php artisan migrate --seed"
     },
-    "APP_ENV": {
-      "required": true
+    "env": {
+        "APP_DEBUG": {
+            "required": true,
+            "value": true
+        },
+        "APP_ENV": {
+            "required": true,
+            "value": "local"
+        },
+        "APP_KEY": {
+            "required": true,
+            "value": "base64:xqGLSJW9fdQkXz+BPVlv4BYK5djcj+CHUO31tCkFiiI="
+        },
+        "DB_CONNECTION": {
+            "required": true,
+            "value": "mysql"
+        }
     },
-    "APP_KEY": {
-      "required": true
+    "formation": {
+        "web": {
+            "quantity": 1
+        }
     },
-    "CLEARDB_DATABASE_URL": {
-      "required": true
-    },
-    "DB_CONNECTION": {
-      "required": true
-    },
-    "PAPERTRAIL_API_TOKEN": {
-      "required": true
-    }
-  },
-  "formation": {
-    "web": {
-      "quantity": 1
-    }
-  },
-  "name": "leandro-codeflix",
-  "scripts": {
-  },
-  "stack": "heroku-20"
+    "addons": [
+        "papertrail:choklad",
+        "cleardb:ignite"
+    ],
+    "buildpacks": [
+        {
+            "url": "heroku/php"
+        }
+    ]
 }
