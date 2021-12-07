@@ -1,7 +1,6 @@
 {
     "name": "delivery-codeflix-heroku",
     "scripts":{
-    	"predeploy": "cd code-catalog-backend/",
         "postdeploy": "composer update && php artisan migrate --seed"
     },
     "env": {
@@ -20,6 +19,9 @@
         "DB_CONNECTION": {
             "required": true,
             "value": "mysql"
+        },
+        "PROJECT_PATH": {
+            "value": "code-catalog-backend"
         }
     },
     "formation": {
