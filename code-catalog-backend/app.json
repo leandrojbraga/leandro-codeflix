@@ -1,20 +1,24 @@
 {
-    "name": "delivery-heroku",
+    "name": "delivery-codeflix-heroku",
     "scripts":{
         "postdeploy": "composer update && php artisan migrate --seed"
     },
     "env": {
         "APP_DEBUG": {
-            "required": true
+            "required": true,
+            "value": true
         },
         "APP_ENV": {
-            "required": true
+            "required": true,
+            "value": "local"
         },
         "APP_KEY": {
-            "required": true
+            "required": true,
+            "value": "base64:xqGLSJW9fdQkXz+BPVlv4BYK5djcj+CHUO31tCkFiiI="
         },
         "DB_CONNECTION": {
-            "required": true
+            "required": true,
+            "value": "mysql"
         }
     },
     "formation": {
@@ -23,8 +27,8 @@
         }
     },
     "addons": [
-        "papertrail",
-        "cleardb"
+        "papertrail:choklad",
+        "cleardb:ignite"
     ],
     "buildpacks": [
         {
