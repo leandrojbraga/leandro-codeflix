@@ -32,8 +32,7 @@
     ],
     "buildpacks": [
         {
-            "url": "heroku/php"
+            "url": "code-catalog-backend/heroku/php"
         }
-    ],
-    "repository": "https://github.com/leandrojbraga/leandro-codeflix/tree/develop/code-catalog-backend"
+    ]
 }
