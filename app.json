@@ -1,5 +1,5 @@
 {
-    "name": "leandro-codeflix",
+    "name": "delivery-codeflix-heroku",
     "scripts":{
         "postdeploy": "composer update && php artisan migrate --seed"
     },
@@ -32,7 +32,7 @@
     ],
     "buildpacks": [
         {
-            "url": "heroku/php"
+            "url": "code-catalog-backend/heroku/php"
         }
     ]
 }
