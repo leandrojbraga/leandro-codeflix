@@ -45,7 +45,7 @@ class VideoUnitTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['opened', 'year_launched', 'duration']
+            ['id','opened', 'year_launched', 'duration']
         );
     }
 

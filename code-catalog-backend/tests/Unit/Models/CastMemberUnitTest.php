@@ -40,7 +40,7 @@ class CastMemberUnitTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['type']
+            ['id','type']
         );
     }
 

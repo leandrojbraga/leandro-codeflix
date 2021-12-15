@@ -40,7 +40,7 @@ class CategoryUnitTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['is_active']
+            ['id','is_active']
         );
     }
 

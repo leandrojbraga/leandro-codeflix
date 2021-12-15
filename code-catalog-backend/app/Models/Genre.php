@@ -15,6 +15,7 @@ class Genre extends Model
     protected $fillable = ['name', 'is_active'];
     protected $dates = ['deleted_at'];
     protected $casts = [
+        'id' => 'string',
         'is_active' => 'boolean'
     ];
 
@@ -24,6 +25,7 @@ class Genre extends Model
 
     public function categories() {
         return $this->belongsToMany(Category::class)
-            ->select(array('categories.id','categories.name'));
+            ->select(array('categories.id','categories.name'))
+            ->withTrashed();
     }
 }

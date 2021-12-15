@@ -36,6 +36,12 @@ class ContentDescriptorUnitTest extends TestCase
         $this->assertIncrementingFalse();
     }
 
+    public function testCastsAttributes() {
+        $this->assertCastsAttributes(
+            ['id']
+        );
+    }
+
     public function testUseAllTraits() {
         $this->assertUseAllTraits(
             [ SoftDeletes::class, Uuid::class]

@@ -26,6 +26,7 @@ class Video extends Model
     ];
     protected $dates = ['deleted_at'];
     protected $casts = [
+        'id' => 'string',
         'opened' => 'boolean',
         'year_launched' => 'integer',
         'duration' => 'integer'
@@ -42,12 +43,14 @@ class Video extends Model
 
     public function genres() {
         return $this->belongsToMany(Genre::class)
-            ->select(array('genres.id','genres.name'));
+            ->select(array('genres.id','genres.name'))
+            ->withTrashed();
     }
 
     public function content_descriptors() {
         return $this->belongsToMany(ContentDescriptor::class)
-            ->select(array('content_descriptors.id','content_descriptors.name'));
+            ->select(array('content_descriptors.id','content_descriptors.name'))
+            ->withTrashed();
     }
     
 

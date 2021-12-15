@@ -40,7 +40,7 @@ class VideoControllerTest extends TestCase
         
         $this->factoryCategory = factory(Category::class)->create();
         $this->factoryGenre = factory(Genre::class)->create();
-        $this->factoryGenre->categories()->attach([$this->factoryCategory->id]);
+        $this->factoryGenre->categories()->sync([$this->factoryCategory->id]);
         $this->factoryContentDescriptor = factory(ContentDescriptor::class)->create();
 
         $this->sendConstrains = [
@@ -208,6 +208,22 @@ class VideoControllerTest extends TestCase
         $this->assertInvalidationData(
             $method, $data, 'exists'
         );
+
+        $category = factory(Category::class)->create();
+        $category->delete();
+        $genre = factory(Genre::class)->create();
+        $genre->delete();
+        $contentDescriptor = factory(ContentDescriptor::class)->create();
+        $contentDescriptor->delete();
+        $data = [
+            'categories_id' => [$category->id],
+            'genres_id' => [$genre->id],
+            'content_descriptors_id' => [$contentDescriptor->id]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'exists'
+        );
     }
 
     public function assertInvalidationRelatedExists($method){
@@ -219,20 +235,15 @@ class VideoControllerTest extends TestCase
             'genres_id' => [$genreId]
         ];
 
-        $attributeRuleReplaces = [
-            'categories_id' => [
-                'value' => $categoryId,
-                'relationship' => 'genre'
-            ],
-            'genres_id' => [
-                'value' => $genreId,
-                'relationship' => 'category'
-            ]
-        ];
+        $this->assertInvalidationDataRequest($method, $data);
 
-        $this->assertInvalidationData(
-            $method, $data, 'related_attribute', $attributeRuleReplaces
-        );
+        $this->response
+        ->assertJsonValidationErrors(['genres_id'])
+        ->assertJsonFragment([ 
+            \Lang::get(
+                'validation.related_attribute', 
+                ['attribute' => 'genres id', 'relationship' => 'category id'])   
+        ]);
     }
     
     public function assertInvalidationDataByAttribute($method)
@@ -264,21 +275,27 @@ class VideoControllerTest extends TestCase
         $video = $this->model()::find($this->getRequestId());
 
         $this->assertCount(1,$video->categories);
-        $this->assertEquals(
-            $this->factoryCategory->id,
-            $video->categories->first()->id
+        $this->assertDatabaseHas('category_video',
+            [
+                'video_id' => $video->id,
+                'category_id' => $this->factoryCategory->id,
+            ]
         );
 
         $this->assertCount(1,$video->genres);
-        $this->assertEquals(
-            $this->factoryGenre->id,
-            $video->genres->first()->id
+        $this->assertDatabaseHas('genre_video',
+            [
+                'video_id' => $video->id,
+                'genre_id' => $this->factoryGenre->id,
+            ]
         );
 
         $this->assertCount(1,$video->genres);
-        $this->assertEquals(
-            $this->factoryContentDescriptor->id,
-            $video->content_descriptors->first()->id
+        $this->assertDatabaseHas('content_descriptor_video',
+            [
+                'video_id' => $video->id,
+                'content_descriptor_id' => $this->factoryContentDescriptor->id,
+            ]
         );
     }
 
@@ -349,11 +366,138 @@ class VideoControllerTest extends TestCase
         $this->assertIdIsUuid4($this->getRequestId());
     }
 
+    private function getFactoryConstrainsToTestSync() {
+        $categoriesId = factory(Category::class, 3)
+            ->create()->pluck('id')->toArray();
+        
+        $genresId = factory(Genre::class, 3)->create()
+            ->each(function(Genre $genre) use ($categoriesId) {
+              $genre->categories()->sync($categoriesId);
+            })
+            ->pluck('id')->toArray();
+
+        
+        $contentDescriptorsId = factory(ContentDescriptor::class, 3)
+            ->create()->pluck('id')->toArray();
+
+        return [$categoriesId, $genresId, $contentDescriptorsId];
+    }
+
+    public function testSyncConstrains() {
+        
+        list($categoriesId, $genresId,
+            $contentDescriptorsId) = $this->getFactoryConstrainsToTestSync();
+
+        $this->setRoute('store');
+        $this->sendRequest(
+            'POST',
+            $this->sendData + [
+                'categories_id' => [$categoriesId[0]],
+                'genres_id' => [$genresId[0]],
+                'content_descriptors_id' => [$contentDescriptorsId[0]]
+            ]
+        );
+
+        $this->assertDatabaseHas('category_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'category_id' => $categoriesId[0]
+            ]
+        );
+        $this->assertDatabaseHas('genre_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'genre_id' => $genresId[0],
+            ]
+        );
+        $this->assertDatabaseHas('content_descriptor_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'content_descriptor_id' => $contentDescriptorsId[0]
+            ]
+        );
+
+
+        $this->setRoute('update', ['video' => $this->getRequestId()]);
+        $this->sendRequest(
+            'PUT',
+            $this->sendData + [
+                'categories_id' => array_slice($categoriesId,1),
+                'genres_id' => array_slice($genresId,1),
+                'content_descriptors_id' => array_slice($contentDescriptorsId,1)
+            ]
+        );
+
+        $this->assertDatabaseMissing('category_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'category_id' => $categoriesId[0]
+            ]
+        );
+        $this->assertDatabaseMissing('genre_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'genre_id' => $genresId[0],
+            ]
+        );
+        $this->assertDatabaseMissing('content_descriptor_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'content_descriptor_id' => $contentDescriptorsId[0]
+            ]
+        );
+
+
+        $this->assertDatabaseHas('category_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'category_id' => $categoriesId[1]
+            ]
+        );
+        $this->assertDatabaseHas('category_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'category_id' => $categoriesId[2]
+            ]
+        );
+
+        $this->assertDatabaseHas('genre_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'genre_id' => $genresId[1],
+            ]
+        );
+        $this->assertDatabaseHas('genre_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'genre_id' => $genresId[2],
+            ]
+        );
+
+        $this->assertDatabaseHas('content_descriptor_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'content_descriptor_id' => $contentDescriptorsId[1]
+            ]
+        );
+        $this->assertDatabaseHas('content_descriptor_video',
+            [
+                'video_id' => $this->getRequestId(),
+                'content_descriptor_id' => $contentDescriptorsId[2]
+            ]
+        );
+    }
+
     private function mockVideoController() {
         $controller = \Mockery::mock(VideoController::class)
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
         
+        $controller
+            ->shouldReceive('findOrFail')
+            ->withAnyArgs()
+            ->andReturn($this->getFactoryModel());
+
         $controller
             ->shouldReceive('validationRules')
             ->withAnyArgs()
@@ -378,24 +522,29 @@ class VideoControllerTest extends TestCase
         $request = \Mockery::mock(Request::class);
 
         $controller =  $this->mockVideoController();
+        $hasError = false;
         try {
             $controller->store($request);
         } catch (TestException $exception) {
             $this->assertCount(1, Video::all());
+            $hasError = true;
         }
-
+        $this->assertTrue($hasError);
         
         $id = $this->getFactoryModel()->id;
         $updatedAt = $this->getFactoryModel()->updated_at;
         
         $controller =  $this->mockVideoController();
+        $hasError = false;
         try {
             $controller->update($request, $id);
         } catch (TestException $exception) {
             $this->assertEquals(
                 $updatedAt,
                 Video::find($id)->updated_at);
+            $hasError = true;
         }
+        $this->assertTrue($hasError);
     }
 
     public function testDestroy()

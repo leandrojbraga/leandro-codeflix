@@ -39,7 +39,7 @@ Accept: application/json
 
 
 ###
-GET http://localhost:8000/api/genres/
+GET http://localhost:8000/api/videos/
 
 ###
 GET http://localhost:8000/api/cast-members/e5d20c43-00f5-413a-8636-c4660d572a8e

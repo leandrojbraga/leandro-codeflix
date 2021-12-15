@@ -85,7 +85,8 @@ class GenreControllerTest extends TestCase
 
     public function assertInvalidationRequired($method) {   
         $data = [
-            'name' => ''
+            'name' => '',
+            'categories_id' => ''
         ];
 
         $this->assertInvalidationData(
@@ -146,6 +147,16 @@ class GenreControllerTest extends TestCase
         $this->assertInvalidationData(
             $method, $data, 'exists'
         );
+        
+        $category = factory(Category::class)->create();
+        $category->delete();
+        $data = [
+            'categories_id' => [$category->id]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'exists'
+        );
     }
 
     public function assertInvalidationDataByAttribute($method)
@@ -171,9 +182,11 @@ class GenreControllerTest extends TestCase
         $genre = $this->model()::find($this->getRequestId());
 
         $this->assertCount(1,$genre->categories);
-        $this->assertEquals(
-            $this->factoryCategory->id,
-            $genre->categories->first()->id
+        $this->assertDatabaseHas('category_genre',
+            [
+                'genre_id' => $genre->id,
+                'category_id' => $this->factoryCategory->id,
+            ]
         );
     }
 
@@ -235,11 +248,64 @@ class GenreControllerTest extends TestCase
         $this->assertIdIsUuid4($this->getRequestId());
     }
 
+    public function testSyncConstrains() {
+        $categoriesId = factory(Category::class, 3)
+            ->create()->pluck('id')->toArray();
+
+        $this->setRoute('store');
+        $this->sendRequest(
+            'POST',
+            $this->sendData + [
+                'categories_id' => [$categoriesId[0]]
+            ]
+        );
+
+        $this->assertDatabaseHas('category_genre',
+            [
+                'genre_id' => $this->getRequestId(),
+                'category_id' => $categoriesId[0]
+            ]
+        );
+
+        $this->setRoute('update', ['genre' => $this->getRequestId()]);
+        $this->sendRequest(
+            'PUT',
+            $this->sendData + [
+                'categories_id' => array_slice($categoriesId,1)
+            ]
+        );
+
+        $this->assertDatabaseMissing('category_genre',
+            [
+                'genre_id' => $this->getRequestId(),
+                'category_id' => $categoriesId[0]
+            ]
+        );
+
+        $this->assertDatabaseHas('category_genre',
+            [
+                'genre_id' => $this->getRequestId(),
+                'category_id' => $categoriesId[1]
+            ]
+        );
+        $this->assertDatabaseHas('category_genre',
+            [
+                'genre_id' => $this->getRequestId(),
+                'category_id' => $categoriesId[2]
+            ]
+        );
+    }
+
     private function mockGenreController() {
         $controller = \Mockery::mock(GenreController::class)
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
         
+        $controller
+            ->shouldReceive('findOrFail')
+            ->withAnyArgs()
+            ->andReturn($this->getFactoryModel());
+
         $controller
             ->shouldReceive('validationRules')
             ->withAnyArgs()
@@ -264,24 +330,29 @@ class GenreControllerTest extends TestCase
         $request = \Mockery::mock(Request::class);
 
         $controller =  $this->mockGenreController();
+        $hasError = false;
         try {
             $controller->store($request);
         } catch (TestException $exception) {
             $this->assertCount(1, Genre::all());
+            $hasError = true;
         }
-
+        $this->assertTrue($hasError);
         
         $id = $this->getFactoryModel()->id;
         $updatedAt = $this->getFactoryModel()->updated_at;
         
         $controller =  $this->mockGenreController();
+        $hasError = false;
         try {
             $controller->update($request, $id);
         } catch (TestException $exception) {
             $this->assertEquals(
                 $updatedAt,
                 Genre::find($id)->updated_at);
+            $hasError = true;
         }
+        $this->assertTrue($hasError);
     }
 
     public function testDestroy()

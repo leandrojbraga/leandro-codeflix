@@ -133,7 +133,7 @@ return [
             'rule-name' => 'custom-message',
         ],
     ],
-    'related_attribute' => 'The ":value" :attribute is not related in any :relationship.',
+    'related_attribute' => 'The :attribute is not related in any :relationship.',
     
 
 

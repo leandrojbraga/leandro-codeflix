@@ -2,7 +2,12 @@
 
 use Illuminate\Support\Str;
 
-$databaseUrl = parse_url(env("CLEARDB_DATABASE_URL"));
+$databaseUrl = parse_url(
+    env(
+        "CLEARDB_DATABASE_URL",
+        "mysql://forge:@forge:3306/127.0.0.1"
+    )
+);
 
 
 return [
