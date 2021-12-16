@@ -30,11 +30,4 @@ class VideoController extends BasicCrudController
             'content_descriptors_id' => 'array|exists:content_descriptors,id,deleted_at,NULL'
         ];
     }
-
-    protected function handleRelations($transaction, Request $request)
-    {
-        $transaction->categories()->sync($request->get('categories_id'));
-        $transaction->genres()->sync($request->get('genres_id'));
-        $transaction->content_descriptors()->sync($request->get('content_descriptors_id'));
-    }
 }

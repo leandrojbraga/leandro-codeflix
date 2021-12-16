@@ -18,9 +18,4 @@ class GenreController extends BasicCrudController
             'categories_id' => 'required|array|exists:categories,id,deleted_at,NULL',
         ];
     }
-
-    protected function handleRelations($transaction, Request $request)
-    {
-        $transaction->categories()->sync($request->get('categories_id'));
-    }
 }

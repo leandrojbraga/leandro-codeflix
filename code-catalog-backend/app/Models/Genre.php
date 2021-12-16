@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Genre extends Model
 {
@@ -18,6 +19,47 @@ class Genre extends Model
         'id' => 'string',
         'is_active' => 'boolean'
     ];
+
+    public static function handleRelations(Genre $genre, array $attributes)
+    {   
+        if (isset($attributes['categories_id'])) {
+            $genre->categories()->sync($attributes['categories_id']);
+        }
+    }
+
+    public static function create(array $attributes = []) {
+        try {
+            DB::beginTransaction();
+            $genre = static::query()->create($attributes);
+            static::handleRelations($genre, $attributes);
+            DB::commit();
+        } catch (\Exception $err) {
+            if (isset($genre)) {
+                // delete upload
+            }
+            DB::rollBack();
+            throw $err;
+        }
+        
+        return $genre;
+    }
+
+    public function update(array $attributes = [], array $options = []) {
+        try {
+            DB::beginTransaction();
+            $updated = parent::update($attributes, $options);
+            static::handleRelations($this, $attributes);
+            DB::commit();
+        } catch (\Exception $err) {
+            if (isset($updated)) {
+                // delete upload new
+            }
+            DB::rollBack();
+            throw $err;
+        }
+        
+        return $updated;
+    }
 
     protected $with = [
         'categories'
