@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\UploadFiles;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,11 +10,14 @@ use Illuminate\Support\Facades\DB;
 
 class Video extends Model
 {
-    use SoftDeletes, Uuid;
+    use SoftDeletes, Uuid, UploadFiles;
 
     const RATINGS = [
         'L', '10', '12', '14', '16', '18'
     ];
+
+    const MAX_SIZE_MOVIE_FILE = 4096;
+    const MIME_TYPE_MOVIE_FILE = 'video/mp4';
 
     public $incrementing = false;
     protected $keyType = 'string';
@@ -23,7 +27,11 @@ class Video extends Model
         'year_launched',
         'opened',
         'rating',
-        'duration'
+        'duration',
+        'movie_file'
+    ];
+    public static $fileFields = [
+        'movie_file'
     ];
     protected $dates = ['deleted_at'];
     protected $casts = [
@@ -47,17 +55,24 @@ class Video extends Model
     }
 
     public static function create(array $attributes = []) {
+        $files = self::extractFiles($attributes);
+
         try {
             DB::beginTransaction();
+            /** @var Video $video */
             $video = static::query()->create($attributes);
             static::handleRelations($video, $attributes);
-            // upload
+
+            $video->uploadFiles($files);
+            
             DB::commit();
+            
         } catch (\Exception $err) {
             if (isset($video)) {
-                // delete upload
+                $video->deleteFiles($files);
             }
             DB::rollBack();
+            
             throw $err;
         }
         
@@ -107,5 +122,9 @@ class Video extends Model
             ->withTrashed();
     }
     
+    protected function uploadDir()
+    {
+        return $this->id;
+    }
 
 }

@@ -3,10 +3,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Rules;
 
-use App\Models\Category;
 use App\Rules\GenreHasCategoryRule;
 use Mockery\MockInterface;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class GenreHasCategoryRuleUnitTest extends TestCase
 {   

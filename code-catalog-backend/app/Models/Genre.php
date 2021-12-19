@@ -30,13 +30,12 @@ class Genre extends Model
     public static function create(array $attributes = []) {
         try {
             DB::beginTransaction();
+            /** @var Genre $video */
             $genre = static::query()->create($attributes);
             static::handleRelations($genre, $attributes);
+            
             DB::commit();
         } catch (\Exception $err) {
-            if (isset($genre)) {
-                // delete upload
-            }
             DB::rollBack();
             throw $err;
         }
@@ -47,13 +46,12 @@ class Genre extends Model
     public function update(array $attributes = [], array $options = []) {
         try {
             DB::beginTransaction();
+
             $updated = parent::update($attributes, $options);
             static::handleRelations($this, $attributes);
+
             DB::commit();
         } catch (\Exception $err) {
-            if (isset($updated)) {
-                // delete upload new
-            }
             DB::rollBack();
             throw $err;
         }

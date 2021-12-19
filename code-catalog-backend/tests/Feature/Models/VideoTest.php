@@ -8,6 +8,8 @@ use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use Tests\Traits\FeatureModelsValidations;
 
@@ -43,7 +45,7 @@ class VideoTest extends TestCase
         $this->assertAttributes(
             [
                 'id', 'title', 'description', 'year_launched',
-                'opened', 'rating', 'duration',
+                'opened', 'rating', 'duration', 'movie_file',
                 'created_at', 'updated_at', 'deleted_at'
             ]
         );
@@ -246,6 +248,17 @@ class VideoTest extends TestCase
         $this->assertCount(1, $video->categories);
         $this->assertCount(1, $video->genres);
         $this->assertCount(1, $video->content_descriptors);
+    }
+
+    public function testUploadFile() {
+        Storage::fake();
+        $file = UploadedFile::fake()->create('video.mp4');
+
+        $model = $this->getModelCreated(
+            $this->sendData + ['movie_file' => $file]
+        );
+        
+        Storage::assertExists("{$model->id}/{$file->hashName()}");
     }
 
     public function testRollbackCreate()

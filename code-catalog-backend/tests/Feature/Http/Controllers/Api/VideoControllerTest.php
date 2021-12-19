@@ -12,6 +12,8 @@ use Tests\Exceptions\TestException;
 use Tests\TestCase;
 use Tests\Traits\FeatureHttpValidations;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class VideoControllerTest extends TestCase
 {   
@@ -245,15 +247,52 @@ class VideoControllerTest extends TestCase
                 ['attribute' => 'genres id', 'relationship' => 'category id'])   
         ]);
     }
+
+    public function assertInvalidationFile($method) {
+        Storage::fake();
+        $data = [
+            'movie_file' => UploadedFile::fake()
+                            ->create('video.mp4')
+                            ->size(Video::MAX_SIZE_MOVIE_FILE + 1)
+        ];
+        $attributeRuleReplaces = [
+            'movie_file' => [ 'max' => Video::MAX_SIZE_MOVIE_FILE ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'max.file', $attributeRuleReplaces
+        );
+
+        $data = [
+            'movie_file' => UploadedFile::fake()
+                            ->create('video.mp4')
+                            ->mimeType('video/quicktime')
+        ];
+        $attributeRuleReplaces = [
+            'movie_file' => [ 'values' => Video::MIME_TYPE_MOVIE_FILE ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'mimes', $attributeRuleReplaces
+        );
+
+        $data = [
+            'movie_file' => "video.mp4"
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'file'
+        );
+    }
     
     public function assertInvalidationDataByAttribute($method)
     {   
         $this->assertInvalidationRequired($method);
 
         $this->assertInvalidationLength($method);
-        
+
         $this->assertInvalidationBoolean($method);
-        
+
         $this->assertInvalidationNumber($method);
 
         $this->assertInvalidationDate($method);
@@ -265,6 +304,8 @@ class VideoControllerTest extends TestCase
         $this->assertInvalidationConstraintsExists($method);
 
         $this->assertInvalidationRelatedExists($method);
+
+        $this->assertInvalidationFile($method);
 
         $this->assertMissingValidationDataNotRequired(
             $method, [], ['opened']
@@ -353,8 +394,26 @@ class VideoControllerTest extends TestCase
 
             $model = $this->model()::find($this->getRequestId());
             $model->delete();
-        }
+        }        
     }
+
+    public function testSaveFile() {
+        Storage::fake();
+        
+        $file = UploadedFile::fake()->create('video.mp4');
+        
+        $this->setRoute('store');
+        $this->assertStore(
+            $this->sendData + $this->sendConstrains + ['movie_file' => $file],
+            $this->sendData + [
+                'opened' => false,
+                'movie_file' => $file->hashName(),
+                'deleted_at' => null
+            ]
+        );
+
+        Storage::assertExists("{$this->getRequestId()}/{$file->hashName()}");
+    } 
 
     public function testUuid4()
     {

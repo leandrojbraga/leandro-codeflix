@@ -27,7 +27,8 @@ class VideoController extends BasicCrudController
                 'required', 'array', 'exists:genres,id,deleted_at,NULL',
                 new GenreHasCategoryRule($request->categories_id)
             ],
-            'content_descriptors_id' => 'array|exists:content_descriptors,id,deleted_at,NULL'
+            'content_descriptors_id' => 'array|exists:content_descriptors,id,deleted_at,NULL',
+            'movie_file' => 'file|mimetypes:'. Video::MIME_TYPE_MOVIE_FILE .'|max:'. Video::MAX_SIZE_MOVIE_FILE
         ];
     }
 }
