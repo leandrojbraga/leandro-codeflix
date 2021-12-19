@@ -14,4 +14,7 @@ class ContentDescriptor extends Model
     protected $keyType = 'string';
     protected $fillable = ['name'];
     protected $dates = ['deleted_at'];
+    protected $casts = [
+        'id' => 'string'
+    ];
 }

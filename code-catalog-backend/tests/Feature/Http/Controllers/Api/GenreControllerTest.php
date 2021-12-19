@@ -85,7 +85,8 @@ class GenreControllerTest extends TestCase
 
     public function assertInvalidationRequired($method) {   
         $data = [
-            'name' => ''
+            'name' => '',
+            'categories_id' => ''
         ];
 
         $this->assertInvalidationData(
@@ -146,6 +147,16 @@ class GenreControllerTest extends TestCase
         $this->assertInvalidationData(
             $method, $data, 'exists'
         );
+        
+        $category = factory(Category::class)->create();
+        $category->delete();
+        $data = [
+            'categories_id' => [$category->id]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'exists'
+        );
     }
 
     public function assertInvalidationDataByAttribute($method)
@@ -171,9 +182,11 @@ class GenreControllerTest extends TestCase
         $genre = $this->model()::find($this->getRequestId());
 
         $this->assertCount(1,$genre->categories);
-        $this->assertEquals(
-            $this->factoryCategory->id,
-            $genre->categories->first()->id
+        $this->assertDatabaseHas('category_genre',
+            [
+                'genre_id' => $genre->id,
+                'category_id' => $this->factoryCategory->id,
+            ]
         );
     }
 
@@ -233,55 +246,6 @@ class GenreControllerTest extends TestCase
         );
 
         $this->assertIdIsUuid4($this->getRequestId());
-    }
-
-    private function mockGenreController() {
-        $controller = \Mockery::mock(GenreController::class)
-            ->makePartial()
-            ->shouldAllowMockingProtectedMethods();
-        
-        $controller
-            ->shouldReceive('validationRules')
-            ->withAnyArgs()
-            ->andReturn([]);
-
-        $controller
-            ->shouldReceive('validateRequestData')
-            ->withAnyArgs()
-            ->andReturn($this->sendData);
-      
-
-        $controller
-            ->shouldReceive('handleRelations')
-            ->once()
-            ->andThrow(new TestException());
-        
-        return $controller;
-    }
-    
-    public function testRollback()
-    {
-        $request = \Mockery::mock(Request::class);
-
-        $controller =  $this->mockGenreController();
-        try {
-            $controller->store($request);
-        } catch (TestException $exception) {
-            $this->assertCount(1, Genre::all());
-        }
-
-        
-        $id = $this->getFactoryModel()->id;
-        $updatedAt = $this->getFactoryModel()->updated_at;
-        
-        $controller =  $this->mockGenreController();
-        try {
-            $controller->update($request, $id);
-        } catch (TestException $exception) {
-            $this->assertEquals(
-                $updatedAt,
-                Genre::find($id)->updated_at);
-        }
     }
 
     public function testDestroy()

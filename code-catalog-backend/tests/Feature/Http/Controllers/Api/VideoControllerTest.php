@@ -12,6 +12,8 @@ use Tests\Exceptions\TestException;
 use Tests\TestCase;
 use Tests\Traits\FeatureHttpValidations;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class VideoControllerTest extends TestCase
 {   
@@ -40,7 +42,7 @@ class VideoControllerTest extends TestCase
         
         $this->factoryCategory = factory(Category::class)->create();
         $this->factoryGenre = factory(Genre::class)->create();
-        $this->factoryGenre->categories()->attach([$this->factoryCategory->id]);
+        $this->factoryGenre->categories()->sync([$this->factoryCategory->id]);
         $this->factoryContentDescriptor = factory(ContentDescriptor::class)->create();
 
         $this->sendConstrains = [
@@ -208,6 +210,22 @@ class VideoControllerTest extends TestCase
         $this->assertInvalidationData(
             $method, $data, 'exists'
         );
+
+        $category = factory(Category::class)->create();
+        $category->delete();
+        $genre = factory(Genre::class)->create();
+        $genre->delete();
+        $contentDescriptor = factory(ContentDescriptor::class)->create();
+        $contentDescriptor->delete();
+        $data = [
+            'categories_id' => [$category->id],
+            'genres_id' => [$genre->id],
+            'content_descriptors_id' => [$contentDescriptor->id]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'exists'
+        );
     }
 
     public function assertInvalidationRelatedExists($method){
@@ -219,19 +237,51 @@ class VideoControllerTest extends TestCase
             'genres_id' => [$genreId]
         ];
 
+        $this->assertInvalidationDataRequest($method, $data);
+
+        $this->response
+        ->assertJsonValidationErrors(['genres_id'])
+        ->assertJsonFragment([ 
+            \Lang::get(
+                'validation.related_attribute', 
+                ['attribute' => 'genres id', 'relationship' => 'category id'])   
+        ]);
+    }
+
+    public function assertInvalidationFile($method) {
+        Storage::fake();
+        $data = [
+            'movie_file' => UploadedFile::fake()
+                            ->create('video.mp4')
+                            ->size(Video::MAX_SIZE_MOVIE_FILE + 1)
+        ];
         $attributeRuleReplaces = [
-            'categories_id' => [
-                'value' => $categoryId,
-                'relationship' => 'genre'
-            ],
-            'genres_id' => [
-                'value' => $genreId,
-                'relationship' => 'category'
-            ]
+            'movie_file' => [ 'max' => Video::MAX_SIZE_MOVIE_FILE ]
         ];
 
         $this->assertInvalidationData(
-            $method, $data, 'related_attribute', $attributeRuleReplaces
+            $method, $data, 'max.file', $attributeRuleReplaces
+        );
+
+        $data = [
+            'movie_file' => UploadedFile::fake()
+                            ->create('video.mp4')
+                            ->mimeType('video/quicktime')
+        ];
+        $attributeRuleReplaces = [
+            'movie_file' => [ 'values' => Video::MIME_TYPE_MOVIE_FILE ]
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'mimes', $attributeRuleReplaces
+        );
+
+        $data = [
+            'movie_file' => "video.mp4"
+        ];
+
+        $this->assertInvalidationData(
+            $method, $data, 'file'
         );
     }
     
@@ -240,9 +290,9 @@ class VideoControllerTest extends TestCase
         $this->assertInvalidationRequired($method);
 
         $this->assertInvalidationLength($method);
-        
+
         $this->assertInvalidationBoolean($method);
-        
+
         $this->assertInvalidationNumber($method);
 
         $this->assertInvalidationDate($method);
@@ -255,6 +305,8 @@ class VideoControllerTest extends TestCase
 
         $this->assertInvalidationRelatedExists($method);
 
+        $this->assertInvalidationFile($method);
+
         $this->assertMissingValidationDataNotRequired(
             $method, [], ['opened']
         );
@@ -264,21 +316,27 @@ class VideoControllerTest extends TestCase
         $video = $this->model()::find($this->getRequestId());
 
         $this->assertCount(1,$video->categories);
-        $this->assertEquals(
-            $this->factoryCategory->id,
-            $video->categories->first()->id
+        $this->assertDatabaseHas('category_video',
+            [
+                'video_id' => $video->id,
+                'category_id' => $this->factoryCategory->id,
+            ]
         );
 
         $this->assertCount(1,$video->genres);
-        $this->assertEquals(
-            $this->factoryGenre->id,
-            $video->genres->first()->id
+        $this->assertDatabaseHas('genre_video',
+            [
+                'video_id' => $video->id,
+                'genre_id' => $this->factoryGenre->id,
+            ]
         );
 
         $this->assertCount(1,$video->genres);
-        $this->assertEquals(
-            $this->factoryContentDescriptor->id,
-            $video->content_descriptors->first()->id
+        $this->assertDatabaseHas('content_descriptor_video',
+            [
+                'video_id' => $video->id,
+                'content_descriptor_id' => $this->factoryContentDescriptor->id,
+            ]
         );
     }
 
@@ -336,8 +394,26 @@ class VideoControllerTest extends TestCase
 
             $model = $this->model()::find($this->getRequestId());
             $model->delete();
-        }
+        }        
     }
+
+    public function testSaveFile() {
+        Storage::fake();
+        
+        $file = UploadedFile::fake()->create('video.mp4');
+        
+        $this->setRoute('store');
+        $this->assertStore(
+            $this->sendData + $this->sendConstrains + ['movie_file' => $file],
+            $this->sendData + [
+                'opened' => false,
+                'movie_file' => $file->hashName(),
+                'deleted_at' => null
+            ]
+        );
+
+        Storage::assertExists("{$this->getRequestId()}/{$file->hashName()}");
+    } 
 
     public function testUuid4()
     {
@@ -347,55 +423,6 @@ class VideoControllerTest extends TestCase
             $this->sendData);
 
         $this->assertIdIsUuid4($this->getRequestId());
-    }
-
-    private function mockVideoController() {
-        $controller = \Mockery::mock(VideoController::class)
-            ->makePartial()
-            ->shouldAllowMockingProtectedMethods();
-        
-        $controller
-            ->shouldReceive('validationRules')
-            ->withAnyArgs()
-            ->andReturn([]);
-
-        $controller
-            ->shouldReceive('validateRequestData')
-            ->withAnyArgs()
-            ->andReturn($this->sendData);
-      
-
-        $controller
-            ->shouldReceive('handleRelations')
-            ->once()
-            ->andThrow(new TestException());
-        
-        return $controller;
-    }
-
-    public function testRollback()
-    {
-        $request = \Mockery::mock(Request::class);
-
-        $controller =  $this->mockVideoController();
-        try {
-            $controller->store($request);
-        } catch (TestException $exception) {
-            $this->assertCount(1, Video::all());
-        }
-
-        
-        $id = $this->getFactoryModel()->id;
-        $updatedAt = $this->getFactoryModel()->updated_at;
-        
-        $controller =  $this->mockVideoController();
-        try {
-            $controller->update($request, $id);
-        } catch (TestException $exception) {
-            $this->assertEquals(
-                $updatedAt,
-                Video::find($id)->updated_at);
-        }
     }
 
     public function testDestroy()

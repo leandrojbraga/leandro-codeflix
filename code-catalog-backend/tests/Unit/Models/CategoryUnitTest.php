@@ -5,7 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\Category;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Tests\Traits\UnitModelsValidations;
 
 class CategoryUnitTest extends TestCase
@@ -40,7 +40,7 @@ class CategoryUnitTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['is_active']
+            ['id','is_active']
         );
     }
 

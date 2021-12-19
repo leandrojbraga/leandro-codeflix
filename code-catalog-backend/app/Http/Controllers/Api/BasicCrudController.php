@@ -13,8 +13,6 @@ abstract class BasicCrudController extends Controller
 
     protected abstract function validationRules($request);
 
-    protected function handleRelations($transaction, Request $request) {}
-
     // Display a listing of the resource.
     // GET -> api/{model}/
     public function index()
@@ -33,15 +31,9 @@ abstract class BasicCrudController extends Controller
     public function store(Request $request)
     {
         $validateData = $this->validateRequestData($request);
-        $self = $this;
-
-        $obj= DB::transaction(function () use ($request, $validateData, $self){
-            $transaction = $this->model()::create($validateData);
-            $self->handleRelations($transaction, $request);
-            return $transaction;
-        });
-        
+        $obj = $this->model()::create($validateData);        
         $obj->refresh();
+        
         return $obj;
     }
 
@@ -65,16 +57,9 @@ abstract class BasicCrudController extends Controller
     // PUT -> api/{model}/{id}
     public function update(Request $request, $id)
     {
+        $obj = $this->findOrFail($id);
         $validateData = $this->validateRequestData($request);
-        $self = $this;
-
-        $obj = DB::transaction(function () use ($request, $id, $validateData, $self)
-        {
-            $transaction = $self->findOrFail($id);
-            $transaction->update($validateData);
-            $self->handleRelations($transaction, $request);            
-            return $transaction;
-        });
+        $obj->update($validateData);
 
         return $obj;
     }

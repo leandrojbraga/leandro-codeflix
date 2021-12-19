@@ -12,6 +12,6 @@ class ContentDescriptorsSeeder extends Seeder
      */
     public function run()
     {
-        factory(ContentDescriptor::class, 10)->create();
+        factory(ContentDescriptor::class, 20)->create();
     }
 }

@@ -5,7 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\CastMember;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Tests\Traits\UnitModelsValidations;
 
 class CastMemberUnitTest extends TestCase
@@ -40,7 +40,7 @@ class CastMemberUnitTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['type']
+            ['id','type']
         );
     }
 

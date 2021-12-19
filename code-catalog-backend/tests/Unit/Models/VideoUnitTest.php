@@ -3,9 +3,10 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Video;
+use App\Models\Traits\UploadFiles;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Tests\Traits\UnitModelsValidations;
 
 class VideoUnitTest extends TestCase
@@ -23,7 +24,8 @@ class VideoUnitTest extends TestCase
             'year_launched',
             'opened',
             'rating',
-            'duration'
+            'duration',
+            'movie_file'
         ]);
     }
 
@@ -45,13 +47,19 @@ class VideoUnitTest extends TestCase
 
     public function testCastsAttributes() {
         $this->assertCastsAttributes(
-            ['opened', 'year_launched', 'duration']
+            ['id','opened', 'year_launched', 'duration']
         );
     }
 
     public function testUseAllTraits() {
         $this->assertUseAllTraits(
-            [ SoftDeletes::class, Uuid::class ]
+            [ SoftDeletes::class, Uuid::class, UploadFiles::class ]
         );
+    }
+
+    public function testFileFields() {
+        $this->assertEqualsCanonicalizing(
+            ['movie_file'],
+            $this->model()::$fileFields);
     }
 }

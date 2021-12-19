@@ -15,12 +15,7 @@ class GenreController extends BasicCrudController
         return [
             'name' => 'required|min:3|max:255',
             'is_active' => 'boolean',
-            'categories_id' => 'required|array|exists:categories,id',
+            'categories_id' => 'required|array|exists:categories,id,deleted_at,NULL',
         ];
-    }
-
-    protected function handleRelations($transaction, Request $request)
-    {
-        $transaction->categories()->sync($request->get('categories_id'));
     }
 }
