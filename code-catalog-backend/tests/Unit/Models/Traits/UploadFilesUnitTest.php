@@ -15,6 +15,7 @@ class UploadFilesUnitTest extends TestCase
     {   
         parent::setUp();
         $this->uploadFile = new UploadFilesStub();
+        Storage::fake();
     }
 
     private function getUploadedFile() {
@@ -36,15 +37,12 @@ class UploadFilesUnitTest extends TestCase
 
     public function testFileUpload()
     {   
-        
         $file = $this->getUploadedFile();
         Storage::assertExists("{$this->uploadFile->videosDir}/{$file->hashName()}");
     }
 
     public function testFilesUpload()
     {   
-        Storage::fake();
-        
         $files = $this->getUploadedFiles();
         foreach ($files as $file) {
             Storage::assertExists("{$this->uploadFile->videosDir}/{$file->hashName()}");
@@ -54,8 +52,6 @@ class UploadFilesUnitTest extends TestCase
 
     public function testFileDelete()
     {   
-        Storage::fake();
-        
         $file = $this->getUploadedFile();
         $fileName = $file->hashName();
         $this->uploadFile->deleteFile($fileName);
@@ -69,8 +65,6 @@ class UploadFilesUnitTest extends TestCase
 
     public function testFilesDelete()
     {   
-        Storage::fake();
-
         $files = $this->getUploadedFiles();
         
         $deleteFiles = [];

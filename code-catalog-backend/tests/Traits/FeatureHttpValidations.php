@@ -9,7 +9,7 @@ trait FeatureHttpValidations
 {   
     use UuidValidations, DatabaseValidations;
 
-    private $response;
+    protected $response;
 
     protected abstract function model();
 

@@ -1,40 +1,15 @@
 <?php
 
-namespace Tests\Feature\Models;
+namespace Tests\Feature\Models\Video;
 
 use App\Models\Category;
 use App\Models\ContentDescriptor;
 use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use Tests\TestCase;
-use Tests\Traits\FeatureModelsValidations;
 
-class VideoTest extends TestCase
+class VideoTest extends BaseVideoTest
 {   
-    use DatabaseMigrations, FeatureModelsValidations;
-
-    private $sendData;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->sendData = [
-            'title' => 'Video title',
-            'description' => 'Video description',
-            'year_launched' => 2020,
-            'rating' => Video::RATINGS[0],
-            'duration' => 90
-        ];
-    }
-
-    protected function model() {
-       return Video::class;
-    }
-
     public function testList()
     {   
         $this->assertList();
@@ -248,17 +223,6 @@ class VideoTest extends TestCase
         $this->assertCount(1, $video->categories);
         $this->assertCount(1, $video->genres);
         $this->assertCount(1, $video->content_descriptors);
-    }
-
-    public function testUploadFile() {
-        Storage::fake();
-        $file = UploadedFile::fake()->create('video.mp4');
-
-        $model = $this->getModelCreated(
-            $this->sendData + ['movie_file' => $file]
-        );
-        
-        Storage::assertExists("{$model->id}/{$file->hashName()}");
     }
 
     public function testRollbackCreate()

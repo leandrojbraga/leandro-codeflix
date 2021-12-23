@@ -1,79 +1,14 @@
 <?php
 
-namespace Tests\Feature\Http\Controllers\Api;
+namespace Tests\Feature\Http\Controllers\Api\VideoController;
 
-use App\Http\Controllers\Api\VideoController;
 use App\Models\Category;
 use App\Models\ContentDescriptor;
 use App\Models\Genre;
 use App\Models\Video;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Tests\Exceptions\TestException;
-use Tests\TestCase;
-use Tests\Traits\FeatureHttpValidations;
-use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
-class VideoControllerTest extends TestCase
+class VideoControllerTest extends BaseVideoControllerTest
 {   
-    use DatabaseMigrations, FeatureHttpValidations;
-
-    private $factoryModel;
-    private $route;
-    private $sendData;
-    private $factoryCategory;
-    private $factoryGenre;
-    private $factoryContentDescriptor;
-    private $sendConstrains;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->setFactoryModel();
-        
-        $this->sendData = [
-            'title' => 'Video title',
-            'description' => 'Video description',
-            'year_launched' => 2020,
-            'rating' => Video::RATINGS[0],
-            'duration' => 90
-        ];
-        
-        $this->factoryCategory = factory(Category::class)->create();
-        $this->factoryGenre = factory(Genre::class)->create();
-        $this->factoryGenre->categories()->sync([$this->factoryCategory->id]);
-        $this->factoryContentDescriptor = factory(ContentDescriptor::class)->create();
-
-        $this->sendConstrains = [
-            'categories_id' => [$this->factoryCategory->id],
-            'genres_id' => [$this->factoryGenre->id],
-            'content_descriptors_id' => [$this->factoryContentDescriptor->id]
-        ];
-    }
-
-    protected function model() {
-        return Video::class;
-    }
-
-    protected function setFactoryModel() {
-        $model = $this->model();
-        $this->factoryModel = factory($model)->create();
-    }
-
-    protected function getFactoryModel() {
-        return $this->factoryModel;
-    }
-
-    protected function setRoute(string $routeSuffix, array $params = []) {
-        $routePrefix = "videos";
-        $this->route = route($routePrefix.'.'.$routeSuffix, $params);
-    }
-
-    protected function getRoute() {
-        return $this->route;
-    }
-
     public function testIndex()
     {   
         $this->setRoute('index');
@@ -247,43 +182,6 @@ class VideoControllerTest extends TestCase
                 ['attribute' => 'genres id', 'relationship' => 'category id'])   
         ]);
     }
-
-    public function assertInvalidationFile($method) {
-        Storage::fake();
-        $data = [
-            'movie_file' => UploadedFile::fake()
-                            ->create('video.mp4')
-                            ->size(Video::MAX_SIZE_MOVIE_FILE + 1)
-        ];
-        $attributeRuleReplaces = [
-            'movie_file' => [ 'max' => Video::MAX_SIZE_MOVIE_FILE ]
-        ];
-
-        $this->assertInvalidationData(
-            $method, $data, 'max.file', $attributeRuleReplaces
-        );
-
-        $data = [
-            'movie_file' => UploadedFile::fake()
-                            ->create('video.mp4')
-                            ->mimeType('video/quicktime')
-        ];
-        $attributeRuleReplaces = [
-            'movie_file' => [ 'values' => Video::MIME_TYPE_MOVIE_FILE ]
-        ];
-
-        $this->assertInvalidationData(
-            $method, $data, 'mimes', $attributeRuleReplaces
-        );
-
-        $data = [
-            'movie_file' => "video.mp4"
-        ];
-
-        $this->assertInvalidationData(
-            $method, $data, 'file'
-        );
-    }
     
     public function assertInvalidationDataByAttribute($method)
     {   
@@ -304,8 +202,6 @@ class VideoControllerTest extends TestCase
         $this->assertInvalidationConstraintsExists($method);
 
         $this->assertInvalidationRelatedExists($method);
-
-        $this->assertInvalidationFile($method);
 
         $this->assertMissingValidationDataNotRequired(
             $method, [], ['opened']
@@ -396,24 +292,6 @@ class VideoControllerTest extends TestCase
             $model->delete();
         }        
     }
-
-    public function testSaveFile() {
-        Storage::fake();
-        
-        $file = UploadedFile::fake()->create('video.mp4');
-        
-        $this->setRoute('store');
-        $this->assertStore(
-            $this->sendData + $this->sendConstrains + ['movie_file' => $file],
-            $this->sendData + [
-                'opened' => false,
-                'movie_file' => $file->hashName(),
-                'deleted_at' => null
-            ]
-        );
-
-        Storage::assertExists("{$this->getRequestId()}/{$file->hashName()}");
-    } 
 
     public function testUuid4()
     {
