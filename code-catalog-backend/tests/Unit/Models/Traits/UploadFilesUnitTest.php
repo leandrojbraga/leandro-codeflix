@@ -2,13 +2,15 @@
 
 namespace Tests\Unit\Models\Traits;
 
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use Tests\Stubs\Models\Traits\UploadFilesStub;
+use Tests\Traits\FilesGenerate;
 
 class UploadFilesUnitTest extends TestCase
 {
+    use FilesGenerate;
+
     private $uploadFile;
 
     protected function setUp(): void
@@ -19,17 +21,14 @@ class UploadFilesUnitTest extends TestCase
     }
 
     private function getUploadedFile() {
-        $file = UploadedFile::fake()->create('video.mp4');
+        $file = $this->newFile('video', 'mp4');
         $this->uploadFile->uploadFile($file);
 
         return $file;
     }
 
     private function getUploadedFiles() {
-        $files = [];
-        for ($i=1; $i < 3; $i++) { 
-            array_push($files, UploadedFile::fake()->create("video{$i}.mp4"));
-        }
+        $files = $this->newFiles('video', 'mp4', 2);
         $this->uploadFile->uploadFiles($files);
 
         return $files;
@@ -101,8 +100,8 @@ class UploadFilesUnitTest extends TestCase
         $this->assertEquals(['file1' => 'test', 'file2' => 'test2'], $attributes);
         $this->assertCount(0, $files);
 
-        $file1 = UploadedFile::fake()->create('video.mp4');
-        $file2 = UploadedFile::fake()->create('image.png');
+        $file1 = $this->newFile('video', 'mp4');
+        $file2 = $this->newFile('image', 'png');
 
         $attributes = ['file1' => $file1, 'test' => 'test'];
         $files = UploadFilesStub::extractFiles($attributes);
@@ -119,5 +118,17 @@ class UploadFilesUnitTest extends TestCase
             $attributes
         );
         $this->assertEquals([$file1, $file2], $files);
+    }
+
+    public function testDeleteOldFiles() {
+        $files = $this->getUploadedFiles();
+        $this->uploadFile->deleteOldFiles();
+        $this->assertCount(2, Storage::allFiles());
+        
+        $this->uploadFile->oldFiles = [$files[0]->hashName()];
+        $this->uploadFile->deleteOldFiles();
+        Storage::assertMissing("{$this->uploadFile->videosDir}/{$files[0]->hashName()}");
+        Storage::assertExists("{$this->uploadFile->videosDir}/{$files[1]->hashName()}");
+        
     }
 }

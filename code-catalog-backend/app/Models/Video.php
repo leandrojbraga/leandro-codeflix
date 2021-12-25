@@ -18,6 +18,8 @@ class Video extends Model
 
     const MAX_SIZE_MOVIE_FILE = 4096;
     const MIME_TYPE_MOVIE_FILE = 'video/mp4';
+    const MAX_SIZE_THUMBNAIL_FILE = 4096;
+    const MIME_TYPE_THUMBNAIL_FILE = ['image/jpeg', 'image/png'];
 
     public $incrementing = false;
     protected $keyType = 'string';
@@ -28,10 +30,11 @@ class Video extends Model
         'opened',
         'rating',
         'duration',
-        'movie_file'
+        'movie_file',
+        'thumbnail_file'
     ];
     public static $fileFields = [
-        'movie_file'
+        'movie_file', 'thumbnail_file'
     ];
     protected $dates = ['deleted_at'];
     protected $casts = [
@@ -80,19 +83,22 @@ class Video extends Model
     }
 
     public function update(array $attributes = [], array $options = []) {
+        $files = self::extractFiles($attributes);
+
         try {
             DB::beginTransaction();
             $updated = parent::update($attributes, $options);
             static::handleRelations($this, $attributes);
             if ($updated) {
-                // upload new
-                // delete old
+                $this->uploadFiles($files);
             }
             DB::commit();
-        } catch (\Exception $err) {
-            if (isset($updated)) {
-                // delete upload new
+            if ($updated && count($files)) {
+                $this->deleteOldFiles();
             }
+        } catch (\Exception $err) {
+            $this->deleteFiles($files);
+            
             DB::rollBack();
             throw $err;
         }

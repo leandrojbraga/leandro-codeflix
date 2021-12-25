@@ -25,7 +25,8 @@ class VideoUnitTest extends TestCase
             'opened',
             'rating',
             'duration',
-            'movie_file'
+            'movie_file',
+            'thumbnail_file'
         ]);
     }
 
@@ -59,7 +60,7 @@ class VideoUnitTest extends TestCase
 
     public function testFileFields() {
         $this->assertEqualsCanonicalizing(
-            ['movie_file'],
+            ['movie_file', 'thumbnail_file'],
             $this->model()::$fileFields);
     }
 }

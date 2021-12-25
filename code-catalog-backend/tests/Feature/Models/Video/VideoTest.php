@@ -20,7 +20,8 @@ class VideoTest extends BaseVideoTest
         $this->assertAttributes(
             [
                 'id', 'title', 'description', 'year_launched',
-                'opened', 'rating', 'duration', 'movie_file',
+                'opened', 'rating', 'duration', 
+                'movie_file', 'thumbnail_file',
                 'created_at', 'updated_at', 'deleted_at'
             ]
         );
@@ -28,26 +29,31 @@ class VideoTest extends BaseVideoTest
 
     public function testSaveBasic()
     {
+        $fileFields = [];
+        foreach (Video::$fileFields as $field) {
+            $fileFields[$field] = "{$field}.test";
+        }
+
         $data = [
             [
-                'send_data' => $this->sendData,
-                'test_data' => $this->sendData + ['opened' => false]
+                'send_data' => $this->sendData + $fileFields,
+                'test_data' => $this->sendData + $fileFields + ['opened' => false]
             ],
             [
-                'send_data' =>  $this->sendData + ['opened' => false],
-                'test_data' =>  $this->sendData + ['opened' => false]
+                'send_data' =>  $this->sendData + $fileFields + ['opened' => false],
+                'test_data' =>  $this->sendData + $fileFields + ['opened' => false]
             ],
             [
-                'send_data' =>  $this->sendData + ['opened' => true],
-                'test_data' =>  $this->sendData + ['opened' => true]
+                'send_data' =>  $this->sendData + $fileFields + ['opened' => true],
+                'test_data' =>  $this->sendData + $fileFields + ['opened' => true]
             ],
             [
                 'send_data' =>  array_replace(
-                                    $this->sendData,
+                                    $this->sendData + $fileFields,
                                     ['rating' => Video::RATINGS[3]]
                                 ),
                 'test_data' =>  array_replace(
-                                    $this->sendData,
+                                    $this->sendData + $fileFields,
                                     ['rating' => Video::RATINGS[3],
                                         'opened' => false]
                                 )
