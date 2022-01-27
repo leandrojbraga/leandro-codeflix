@@ -16,8 +16,20 @@ class Video extends Model
         'L', '10', '12', '14', '16', '18'
     ];
 
-    const MAX_SIZE_MOVIE_FILE = 4096;
-    const MIME_TYPE_MOVIE_FILE = 'video/mp4';
+    const TYPE_VIDEO_FILE = 'video/mp4';
+    const TYPE_IMAGE_FILE = ['image/jpeg', 'image/png'];
+    const MB_SIZE = 1024;
+    const GB_SIZE = 1024 * 1024;
+
+    const MAX_SIZE_TRAILER_FILE = self::GB_SIZE;
+    const MIME_TYPE_TRAILER_FILE = self::TYPE_VIDEO_FILE;
+    const MAX_SIZE_MOVIE_FILE = self::GB_SIZE * 50;
+    const MIME_TYPE_MOVIE_FILE = self::TYPE_VIDEO_FILE;
+    const MAX_SIZE_THUMBNAIL_FILE = self::MB_SIZE * 5;
+    const MIME_TYPE_THUMBNAIL_FILE = self::TYPE_IMAGE_FILE;
+    const MAX_SIZE_BANNER_FILE = self::MB_SIZE * 10;
+    const MIME_TYPE_BANNER_FILE = self::TYPE_IMAGE_FILE;
+    
 
     public $incrementing = false;
     protected $keyType = 'string';
@@ -28,10 +40,14 @@ class Video extends Model
         'opened',
         'rating',
         'duration',
-        'movie_file'
+        'trailer_file',
+        'movie_file',
+        'thumbnail_file',
+        'banner_file'        
     ];
     public static $fileFields = [
-        'movie_file'
+        'trailer_file', 'movie_file',
+        'thumbnail_file', 'banner_file' 
     ];
     protected $dates = ['deleted_at'];
     protected $casts = [
@@ -80,19 +96,22 @@ class Video extends Model
     }
 
     public function update(array $attributes = [], array $options = []) {
+        $files = self::extractFiles($attributes);
+
         try {
             DB::beginTransaction();
             $updated = parent::update($attributes, $options);
             static::handleRelations($this, $attributes);
             if ($updated) {
-                // upload new
-                // delete old
+                $this->uploadFiles($files);
             }
             DB::commit();
-        } catch (\Exception $err) {
-            if (isset($updated)) {
-                // delete upload new
+            if ($updated && count($files)) {
+                $this->deleteOldFiles();
             }
+        } catch (\Exception $err) {
+            $this->deleteFiles($files);
+            
             DB::rollBack();
             throw $err;
         }
@@ -127,4 +146,39 @@ class Video extends Model
         return $this->id;
     }
 
+    public function getTrailerFileUrlAttribute()
+    {  
+        if ($this->trailer_file) {
+            return $this->getFileUrl($this->trailer_file);
+        }
+        
+        return null;
+    }
+
+    public function getMovieFileUrlAttribute()
+    {  
+        if ($this->movie_file) {
+            return $this->getFileUrl($this->movie_file);
+        }
+        
+        return null;
+    }
+
+    public function getThumbnailFileUrlAttribute()
+    {  
+        if ($this->thumbnail_file) {
+            return $this->getFileUrl($this->thumbnail_file);
+        }
+        
+        return null;
+    }
+
+    public function getBannerFileUrlAttribute()
+    {  
+        if ($this->banner_file) {
+            return $this->getFileUrl($this->banner_file);
+        }
+        
+        return null;
+    }
 }

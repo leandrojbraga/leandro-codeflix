@@ -2,12 +2,31 @@
 
 namespace App\Models\Traits;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 trait UploadFiles
 {   
+    public $oldFiles = [];
+
     protected abstract function uploadDir();
+
+    public static function bootUploadFiles() {
+        static::updating(function (Model $model) {
+            $fieldsUpdated = array_keys($model->getDirty());
+
+            foreach(self::$fileFields as $field){
+                if(in_array($field, $fieldsUpdated)) {
+                    $file = $model->getOriginal($field);
+                    
+                    if ($file) {
+                        $model->oldFiles[] = $file;
+                    }
+                }
+            }
+        });
+    }
 
     public function uploadFile(UploadedFile $file)
     {
@@ -39,20 +58,32 @@ trait UploadFiles
         foreach ($files as $file) {
             $this->deleteFile($file);
         }
+
+        if (empty(Storage::files($this->uploadDir()))) {
+            Storage::deleteDirectory($this->uploadDir());
+        }
+    }
+
+    public function deleteOldFiles()
+    {
+        $this->deleteFiles($this->oldFiles);
     }
 
     public static function extractFiles(array &$attributes = [])
     {
         $files = [];
-        foreach(self::$fileFields as $file){
-            if (isset($attributes[$file]) && $attributes[$file] instanceof UploadedFile) {
-                $files[] = $attributes[$file];
-                $attributes[$file] = $attributes[$file]->hashName();
+        foreach(self::$fileFields as $field){
+            if (isset($attributes[$field]) && $attributes[$field] instanceof UploadedFile) {
+                $files[] = $attributes[$field];
+                $attributes[$field] = $attributes[$field]->hashName();
             }
         }
 
         return $files;
     }
 
+    public function getFileUrl($file_name) {
+        return Storage::url("{$this->uploadDir()}/{$file_name}");
+    }
     
 }

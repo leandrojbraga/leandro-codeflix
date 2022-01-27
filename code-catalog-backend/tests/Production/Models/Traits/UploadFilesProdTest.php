@@ -1,24 +1,29 @@
 <?php
 
-namespace Tests\Unit\Models\Traits;
+namespace Tests\Production\Models\Traits;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use Tests\Stubs\Models\Traits\UploadFilesStub;
 use Tests\Traits\FilesGenerate;
+use Tests\Traits\TestProduction;
 use Tests\Traits\TestStorages;
 
-class UploadFilesUnitTest extends TestCase
+class UploadFilesProdTest extends TestCase
 {
-    use FilesGenerate, TestStorages;
+    use FilesGenerate, TestStorages, TestProduction;
 
     private $uploadFile;
 
     protected function setUp(): void
     {   
         parent::setUp();
+        $this->skipTestIfNotProd("Testing Production");
         $this->uploadFile = new UploadFilesStub();
-        Storage::fake();
+        Config::set('filesystems.default', 'gcs');
+        $this->deleteAllFiles();
+        
     }
 
     protected function tearDown(): void
@@ -51,12 +56,12 @@ class UploadFilesUnitTest extends TestCase
         $file = $this->getUploadedFile();
         $fileUrl = $this->uploadFile->getFileUrl($file->hashName());
         
-        $pathRoot = '/storage';
+        $apiRootUrl = env('GOOGLE_CLOUD_STORAGE_API_URI');
         
         $this->assertEquals(
             $fileUrl,
-            "{$pathRoot}/{$this->uploadFile->videosDir}/{$file->hashName()}"
-        );
+            "{$apiRootUrl}/{$this->uploadFile->videosDir}/{$file->hashName()}"
+        );        
     }
 
     public function testFilesUpload()

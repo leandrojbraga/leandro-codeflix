@@ -1,40 +1,15 @@
 <?php
 
-namespace Tests\Feature\Models;
+namespace Tests\Feature\Models\Video;
 
 use App\Models\Category;
 use App\Models\ContentDescriptor;
 use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use Tests\TestCase;
-use Tests\Traits\FeatureModelsValidations;
 
-class VideoTest extends TestCase
+class VideoTest extends BaseVideoTest
 {   
-    use DatabaseMigrations, FeatureModelsValidations;
-
-    private $sendData;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->sendData = [
-            'title' => 'Video title',
-            'description' => 'Video description',
-            'year_launched' => 2020,
-            'rating' => Video::RATINGS[0],
-            'duration' => 90
-        ];
-    }
-
-    protected function model() {
-       return Video::class;
-    }
-
     public function testList()
     {   
         $this->assertList();
@@ -45,7 +20,9 @@ class VideoTest extends TestCase
         $this->assertAttributes(
             [
                 'id', 'title', 'description', 'year_launched',
-                'opened', 'rating', 'duration', 'movie_file',
+                'opened', 'rating', 'duration', 
+                'trailer_file', 'movie_file',
+                'thumbnail_file', 'banner_file',
                 'created_at', 'updated_at', 'deleted_at'
             ]
         );
@@ -53,26 +30,31 @@ class VideoTest extends TestCase
 
     public function testSaveBasic()
     {
+        $fileFields = [];
+        foreach (Video::$fileFields as $field) {
+            $fileFields[$field] = "{$field}.test";
+        }
+
         $data = [
             [
-                'send_data' => $this->sendData,
-                'test_data' => $this->sendData + ['opened' => false]
+                'send_data' => $this->sendData + $fileFields,
+                'test_data' => $this->sendData + $fileFields + ['opened' => false]
             ],
             [
-                'send_data' =>  $this->sendData + ['opened' => false],
-                'test_data' =>  $this->sendData + ['opened' => false]
+                'send_data' =>  $this->sendData + $fileFields + ['opened' => false],
+                'test_data' =>  $this->sendData + $fileFields + ['opened' => false]
             ],
             [
-                'send_data' =>  $this->sendData + ['opened' => true],
-                'test_data' =>  $this->sendData + ['opened' => true]
+                'send_data' =>  $this->sendData + $fileFields + ['opened' => true],
+                'test_data' =>  $this->sendData + $fileFields + ['opened' => true]
             ],
             [
                 'send_data' =>  array_replace(
-                                    $this->sendData,
+                                    $this->sendData + $fileFields,
                                     ['rating' => Video::RATINGS[3]]
                                 ),
                 'test_data' =>  array_replace(
-                                    $this->sendData,
+                                    $this->sendData + $fileFields,
                                     ['rating' => Video::RATINGS[3],
                                         'opened' => false]
                                 )
@@ -248,17 +230,6 @@ class VideoTest extends TestCase
         $this->assertCount(1, $video->categories);
         $this->assertCount(1, $video->genres);
         $this->assertCount(1, $video->content_descriptors);
-    }
-
-    public function testUploadFile() {
-        Storage::fake();
-        $file = UploadedFile::fake()->create('video.mp4');
-
-        $model = $this->getModelCreated(
-            $this->sendData + ['movie_file' => $file]
-        );
-        
-        Storage::assertExists("{$model->id}/{$file->hashName()}");
     }
 
     public function testRollbackCreate()
