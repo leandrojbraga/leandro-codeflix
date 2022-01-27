@@ -37,3 +37,10 @@ vendor/bin/phpunit --filter CategoryTest
 vendor/bin/phpunit --filter CategoryTest::testFillableFields
 
 vendor/bin/phpunit CategoryTest tests/Feature/Models/CategoryTest.php --filter testSoftDelete
+
+
+
+
+gcloud kms encrypt --ciphertext-file=./storage/credentials/google/service-account-storage.json.enc --plaintext-file=./storage/credentials/google/service-account-storage.json --location=global --keyring=lb-codeflix-storage --key=service-account
+
+gcloud kms decrypt --ciphertext-file=./storage/credentials/google/service-account-storage.json.enc --plaintext-file=./storage/credentials/google/service-account-storage.json --location=global --keyring=lb-codeflix-storage --key=service-account

@@ -82,5 +82,8 @@ trait UploadFiles
         return $files;
     }
 
+    public function getFileUrl($file_name) {
+        return Storage::url("{$this->uploadDir()}/{$file_name}");
+    }
     
 }

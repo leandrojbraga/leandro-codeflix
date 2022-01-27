@@ -21,7 +21,8 @@ class VideoTest extends BaseVideoTest
             [
                 'id', 'title', 'description', 'year_launched',
                 'opened', 'rating', 'duration', 
-                'movie_file', 'thumbnail_file',
+                'trailer_file', 'movie_file',
+                'thumbnail_file', 'banner_file',
                 'created_at', 'updated_at', 'deleted_at'
             ]
         );
