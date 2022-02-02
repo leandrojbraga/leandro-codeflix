@@ -48,7 +48,7 @@ class UploadFilesProdTest extends TestCase
     public function testFileUpload()
     {   
         $file = $this->getUploadedFile();
-        Storage::assertExists("{$this->uploadFile->videosDir}/{$file->hashName()}");
+        Storage::assertExists($this->uploadFile->relativeFilePath($file->hashName()));
     }
 
     public function testFileUploadUrl()
@@ -56,11 +56,11 @@ class UploadFilesProdTest extends TestCase
         $file = $this->getUploadedFile();
         $fileUrl = $this->uploadFile->getFileUrl($file->hashName());
         
-        $apiRootUrl = env('GOOGLE_CLOUD_STORAGE_API_URI');
+        $baseUrl = config('filesystems.disks.gcs.storage_api_uri');
         
         $this->assertEquals(
             $fileUrl,
-            "{$apiRootUrl}/{$this->uploadFile->videosDir}/{$file->hashName()}"
+            "{$baseUrl}/{$this->uploadFile->relativeFilePath($file->hashName())}"
         );        
     }
 
@@ -68,7 +68,7 @@ class UploadFilesProdTest extends TestCase
     {   
         $files = $this->getUploadedFiles();
         foreach ($files as $file) {
-            Storage::assertExists("{$this->uploadFile->videosDir}/{$file->hashName()}");
+            Storage::assertExists($this->uploadFile->relativeFilePath($file->hashName()));
         }
         
     }
@@ -78,11 +78,11 @@ class UploadFilesProdTest extends TestCase
         $file = $this->getUploadedFile();
         $fileName = $file->hashName();
         $this->uploadFile->deleteFile($fileName);
-        Storage::assertMissing("{$this->uploadFile->videosDir}/{$fileName}");
+        Storage::assertMissing($this->uploadFile->relativeFilePath($fileName));
 
         $file = $this->getUploadedFile();
         $this->uploadFile->deleteFile($file);
-        Storage::assertMissing("{$this->uploadFile->videosDir}/{$file->hashName()}");
+        Storage::assertMissing($this->uploadFile->relativeFilePath($file->hashName()));
         
     }
 
@@ -102,7 +102,7 @@ class UploadFilesProdTest extends TestCase
         $this->uploadFile->deleteFiles($deleteFiles);
         
         foreach ($files as $file) {
-            Storage::assertMissing("{$this->uploadFile->videosDir}/{$file->hashName()}");
+            Storage::assertMissing($this->uploadFile->relativeFilePath($file->hashName()));
         }
     }
 
@@ -151,8 +151,8 @@ class UploadFilesProdTest extends TestCase
         
         $this->uploadFile->oldFiles = [$files[0]->hashName()];
         $this->uploadFile->deleteOldFiles();
-        Storage::assertMissing("{$this->uploadFile->videosDir}/{$files[0]->hashName()}");
-        Storage::assertExists("{$this->uploadFile->videosDir}/{$files[1]->hashName()}");
+        Storage::assertMissing($this->uploadFile->relativeFilePath($files[0]->hashName()));
+        Storage::assertExists($this->uploadFile->relativeFilePath($files[1]->hashName()));
         
     }
 }

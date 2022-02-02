@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Models\Video;
 
+use App\Models\Video;
 use Illuminate\Database\Events\TransactionCommitted;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Tests\Exceptions\TestException;
@@ -15,7 +17,7 @@ class VideoUploadTest extends BaseVideoTest
     protected function setUp(): void
     {
         parent::setUp();
-        Storage::fake();
+        //Storage::fake();
     }
 
     private function createVideo() {
@@ -29,13 +31,32 @@ class VideoUploadTest extends BaseVideoTest
         );
     }
 
+    protected function assertFileExistsInStorage($model, array $files_name) {
+        foreach ($files_name as $file_name) {
+            Storage::assertExists(
+                $model->relativeFilePath($file_name)
+            );
+        }
+    }
+
+    protected function assertFileMissingInStorage($model, array $files_name) {
+        foreach ($files_name as $file_name) {
+            Storage::assertMissing(
+                $model->relativeFilePath($file_name)
+            );
+        }
+    }
+
     public function testIfCreateSuccessUploadFile() {
         $video = $this->createVideo();
         
-        Storage::assertExists("{$video->id}/{$video->trailer_file}");
-        Storage::assertExists("{$video->id}/{$video->movie_file}");
-        Storage::assertExists("{$video->id}/{$video->thumbnail_file}");
-        Storage::assertExists("{$video->id}/{$video->banner_file}");
+        $this->assertFileExistsInStorage(
+            $video,
+            [
+                $video->trailer_file, $video->movie_file,
+                $video->thumbnail_file, $video->banner_file
+            ]
+        );
     }
 
     public function testIfCreateExceptionDeleteFile() {
@@ -71,10 +92,13 @@ class VideoUploadTest extends BaseVideoTest
             ]
         );
         
-        Storage::assertExists("{$video->id}/{$video->trailer_file}");
-        Storage::assertExists("{$video->id}/{$video->movie_file}");
-        Storage::assertExists("{$video->id}/{$video->thumbnail_file}");
-        Storage::assertExists("{$video->id}/{$video->banner_file}");
+        $this->assertFileExistsInStorage(
+            $video,
+            [
+                $video->trailer_file, $video->movie_file,
+                $video->thumbnail_file, $video->banner_file
+            ]
+        );
 
         $newMovieFile = $this->newFile('movie2','mp4');
         $newBannerFile = $this->newFile('banner2','jpg');
@@ -85,14 +109,21 @@ class VideoUploadTest extends BaseVideoTest
             ]
         );
 
-        Storage::assertExists("{$video->id}/{$trailerFile->hashName()}");
-        Storage::assertExists("{$video->id}/{$thumbnailFile->hashName()}");
+        $this->assertFileExistsInStorage(
+            $video,
+            [
+                $trailerFile->hashName(), $thumbnailFile->hashName(),
+                $newMovieFile->hashName(), $newBannerFile->hashName()
+            ]
+        );
 
-        Storage::assertExists("{$video->id}/{$newMovieFile->hashName()}");
-        Storage::assertMissing("{$video->id}/{$movieFile->hashName()}");
-
-        Storage::assertExists("{$video->id}/{$newBannerFile->hashName()}");
-        Storage::assertMissing("{$video->id}/{$bannerFile->hashName()}");
+        $this->assertFileMissingInStorage(
+            $video,
+            [
+                $movieFile->hashName(),
+                $bannerFile->hashName()
+            ]
+        );
     }
 
     public function testIfUploadExceptionDeleteFile() {
@@ -102,11 +133,13 @@ class VideoUploadTest extends BaseVideoTest
         $thumbnailFileName = $video->thumbnail_file;
         $bannerFileName = $video->banner_file;
         
-        Storage::assertExists("{$video->id}/{$trailerFileName}");
-        Storage::assertExists("{$video->id}/{$movieFileName}");
-        Storage::assertExists("{$video->id}/{$thumbnailFileName}");
-        Storage::assertExists("{$video->id}/{$bannerFileName}");
-
+        $this->assertFileExistsInStorage(
+            $video,
+            [
+                $trailerFileName, $movieFileName,
+                $thumbnailFileName, $bannerFileName
+            ]
+        );
 
         Event::listen(TransactionCommitted::class, function() {
             throw new TestException();
@@ -124,41 +157,48 @@ class VideoUploadTest extends BaseVideoTest
                 ]
             );
         } catch (TestException $e) {
-            Storage::assertExists("{$video->id}/{$trailerFileName}");
-            Storage::assertExists("{$video->id}/{$movieFileName}");
-            Storage::assertExists("{$video->id}/{$thumbnailFileName}");
-            Storage::assertExists("{$video->id}/{$bannerFileName}");
+            $this->assertFileExistsInStorage(
+                $video,
+                [
+                    $trailerFileName, $movieFileName,
+                    $thumbnailFileName, $bannerFileName
+                ]
+            );
 
-            Storage::assertMissing("{$video->id}/{$newMovieFile->hashName()}");
-            Storage::assertMissing("{$video->id}/{$newBannerFile->hashName()}");
+            $this->assertFileMissingInStorage(
+                $video,
+                [
+                    $newMovieFile->hashName(),
+                    $newBannerFile->hashName()
+                ]
+            );
+
             $hasError = true;
         }
 
         $this->assertTrue($hasError);
     }
 
+    protected function assertFilesUrl($model, $baseUrl, $files_name) {
+        foreach ($files_name as $file_name) {
+            $fileUrl = $model->{$file_name} ? "{$baseUrl}/{$model->relativeFilePath($model->{$file_name})}" : null;
+
+            $this->assertEquals(
+                $fileUrl,
+                $model->{$file_name."_url"}
+            );
+        }
+    }
+
     public function testVideoFilesUrl() {
         $video = $this->createVideo();
-        $pathRoot = '/storage';
 
-        $this->assertEquals(
-            $video->trailer_file ? "{$pathRoot}/{$video->id}/{$video->trailer_file}" : null, 
-            $video->trailer_file_url
-        );
+        $localDriver = config('filesystems.default');
+        $baseUrl = config('filesystems.disks.'.$localDriver)['url'];
+        $this->assertFilesUrl($video, $baseUrl, Video::$fileFields);
 
-        $this->assertEquals(
-            $video->movie_file ? "{$pathRoot}/{$video->id}/{$video->movie_file}" : null, 
-            $video->movie_file_url
-        );
-
-        $this->assertEquals(
-            $video->thumbnail_file ? "{$pathRoot}/{$video->id}/{$video->thumbnail_file}" : null, 
-            $video->thumbnail_file_url
-        );
-
-        $this->assertEquals(
-            $video->banner_file ? "{$pathRoot}/{$video->id}/{$video->banner_file}" : null, 
-            $video->banner_file_url
-        );
+        Config::set('filesystems.default', 'gcs');
+        $baseUrl = config('filesystems.disks.gcs.storage_api_uri');
+        $this->assertFilesUrl($video, $baseUrl, Video::$fileFields);
     }
 }

@@ -18,7 +18,7 @@ class UploadFilesUnitTest extends TestCase
     {   
         parent::setUp();
         $this->uploadFile = new UploadFilesStub();
-        Storage::fake();
+        //Storage::fake();
     }
 
     protected function tearDown(): void
@@ -40,10 +40,18 @@ class UploadFilesUnitTest extends TestCase
         return $files;
     }
 
+    public function testRelativeFilePath()
+    {   
+        $this->assertEquals(
+            "{$this->uploadFile->videosDir}/video.mp4",
+            $this->uploadFile->relativeFilePath("video.mp4")
+        );
+    }
+
     public function testFileUpload()
     {   
         $file = $this->getUploadedFile();
-        Storage::assertExists("{$this->uploadFile->videosDir}/{$file->hashName()}");
+        Storage::assertExists($this->uploadFile->relativeFilePath($file->hashName()));
     }
 
     public function testFileUploadUrl()
@@ -51,11 +59,12 @@ class UploadFilesUnitTest extends TestCase
         $file = $this->getUploadedFile();
         $fileUrl = $this->uploadFile->getFileUrl($file->hashName());
         
-        $pathRoot = '/storage';
+        $localDriver = config('filesystems.default');
+        $baseUrl = config('filesystems.disks.'.$localDriver)['url'];
         
         $this->assertEquals(
             $fileUrl,
-            "{$pathRoot}/{$this->uploadFile->videosDir}/{$file->hashName()}"
+            "{$baseUrl}/{$this->uploadFile->relativeFilePath($file->hashName())}"
         );
     }
 
@@ -63,7 +72,7 @@ class UploadFilesUnitTest extends TestCase
     {   
         $files = $this->getUploadedFiles();
         foreach ($files as $file) {
-            Storage::assertExists("{$this->uploadFile->videosDir}/{$file->hashName()}");
+            Storage::assertExists($this->uploadFile->relativeFilePath($file->hashName()));
         }
         
     }
@@ -73,11 +82,11 @@ class UploadFilesUnitTest extends TestCase
         $file = $this->getUploadedFile();
         $fileName = $file->hashName();
         $this->uploadFile->deleteFile($fileName);
-        Storage::assertMissing("{$this->uploadFile->videosDir}/{$fileName}");
+        Storage::assertMissing($this->uploadFile->relativeFilePath($fileName));
 
         $file = $this->getUploadedFile();
         $this->uploadFile->deleteFile($file);
-        Storage::assertMissing("{$this->uploadFile->videosDir}/{$file->hashName()}");
+        Storage::assertMissing($this->uploadFile->relativeFilePath($file->hashName()));
         
     }
 
@@ -97,7 +106,7 @@ class UploadFilesUnitTest extends TestCase
         $this->uploadFile->deleteFiles($deleteFiles);
         
         foreach ($files as $file) {
-            Storage::assertMissing("{$this->uploadFile->videosDir}/{$file->hashName()}");
+            Storage::assertMissing($this->uploadFile->relativeFilePath($file->hashName()));
         }
     }
 
@@ -146,8 +155,8 @@ class UploadFilesUnitTest extends TestCase
         
         $this->uploadFile->oldFiles = [$files[0]->hashName()];
         $this->uploadFile->deleteOldFiles();
-        Storage::assertMissing("{$this->uploadFile->videosDir}/{$files[0]->hashName()}");
-        Storage::assertExists("{$this->uploadFile->videosDir}/{$files[1]->hashName()}");
+        Storage::assertMissing($this->uploadFile->relativeFilePath($files[0]->hashName()));
+        Storage::assertExists($this->uploadFile->relativeFilePath($files[1]->hashName()));
         
     }
 }
