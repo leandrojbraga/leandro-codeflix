@@ -10,7 +10,7 @@ class ContentDescriptorStub extends Model
 {   
     protected static $tableName = 'content_descriptor_stubs';
     protected $table = 'content_descriptor_stubs';
-    protected $fillable = ['name', 'is_active'];
+    protected $fillable = ['name'];
     
     public static function createTable() {
         Schema::create(self::$tableName, function (Blueprint $table) {

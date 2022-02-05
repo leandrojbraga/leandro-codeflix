@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Resources\CastMemberResource;
 use App\Models\CastMember;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -27,6 +28,10 @@ class CastMemberControllerTest extends TestCase
 
     protected function model() {
         return CastMember::class;
+    }
+
+    protected function modelResource() {
+        return CastMemberResource::class;
     }
 
     protected function setFactoryModel() {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Resources\VideoResource;
 use App\Models\Video;
 use App\Rules\GenreHasCategoryRule;
 use App\Rules\GenreRelationCategory;
@@ -33,5 +34,15 @@ class VideoController extends BasicCrudController
             'thumbnail_file' => 'file|mimetypes:'. implode(',', Video::MIME_TYPE_THUMBNAIL_FILE) .'|max:'. Video::MAX_SIZE_THUMBNAIL_FILE,
             'banner_file' => 'file|mimetypes:'. implode(',', Video::MIME_TYPE_BANNER_FILE) .'|max:'. Video::MAX_SIZE_BANNER_FILE
         ];
+    }
+
+    protected function resourceCollection()
+    {
+        return $this->resource();
+    }
+
+    protected function resource()
+    {
+        return VideoResource::class;
     }
 }

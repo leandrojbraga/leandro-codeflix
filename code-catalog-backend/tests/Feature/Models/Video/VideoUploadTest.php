@@ -17,7 +17,6 @@ class VideoUploadTest extends BaseVideoTest
     protected function setUp(): void
     {
         parent::setUp();
-        //Storage::fake();
     }
 
     private function createVideo() {
@@ -60,6 +59,7 @@ class VideoUploadTest extends BaseVideoTest
     }
 
     public function testIfCreateExceptionDeleteFile() {
+        Storage::fake();
         Event::listen(TransactionCommitted::class, function() {
             throw new TestException();
         });

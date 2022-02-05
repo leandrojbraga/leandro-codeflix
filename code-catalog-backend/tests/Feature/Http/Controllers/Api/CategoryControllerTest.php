@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -26,6 +27,10 @@ class CategoryControllerTest extends TestCase
         return Category::class;
     }
 
+    protected function modelResource() {
+        return CategoryResource::class;
+    }
+
     protected function setFactoryModel() {
         $model = $this->model();
         $this->factoryModel = factory($model)->create();
@@ -47,7 +52,7 @@ class CategoryControllerTest extends TestCase
     public function testIndex()
     {   
         $this->setRoute('index');
-        $this->assertIndex();
+        $this->assertIndex($perPage = 16);
     }
 
     public function testShow()

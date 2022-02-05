@@ -64,8 +64,6 @@ class Genre extends Model
     ];
 
     public function categories() {
-        return $this->belongsToMany(Category::class)
-            ->select(array('categories.id','categories.name'))
-            ->withTrashed();
+        return $this->belongsToMany(Category::class)->withTrashed();
     }
 }

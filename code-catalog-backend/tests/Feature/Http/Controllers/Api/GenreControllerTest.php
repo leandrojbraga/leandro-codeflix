@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\GenreController;
+use App\Http\Resources\GenreResource;
 use App\Models\Category;
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -33,10 +34,16 @@ class GenreControllerTest extends TestCase
         $this->sendConstrains = [
             'categories_id' => [$this->factoryCategory->id]
         ];
+
+        $this->relations = ['categories'];
     }
 
     protected function model() {
         return Genre::class;
+    }
+
+    protected function modelResource() {
+        return GenreResource::class;
     }
 
     protected function setFactoryModel() {
