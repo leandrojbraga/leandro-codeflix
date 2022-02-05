@@ -4,6 +4,7 @@ namespace Tests\Stubs\Controllers;
 
 use App\Http\Controllers\Api\BasicCrudController;
 use Tests\Stubs\Models\CastMemberStub;
+use Tests\Stubs\Resources\CastMemberResourceStub;
 
 class CastMemberControllerStub extends BasicCrudController
 {
@@ -18,5 +19,13 @@ class CastMemberControllerStub extends BasicCrudController
         ];
     }
 
+    protected function resourceCollection()
+    {
+        return $this->resource();
+    }
 
+    protected function resource()
+    {
+        return CastMemberResourceStub::class;
+    }
 }

@@ -12,6 +12,10 @@ trait UploadFiles
 
     protected abstract function uploadDir();
 
+    public function relativeFilePath($value) {
+        return "{$this->uploadDir()}/{$value}";
+    }
+
     public static function bootUploadFiles() {
         static::updating(function (Model $model) {
             $fieldsUpdated = array_keys($model->getDirty());
@@ -50,7 +54,7 @@ trait UploadFiles
     public function deleteFile($file)
     {   
         $fileName = $file instanceof UploadedFile ? $file->hashName() : $file;
-        Storage::delete("{$this->uploadDir()}/{$fileName}");
+        Storage::delete($this->relativeFilePath($fileName));
     }
 
     public function deleteFiles(array $files)
@@ -83,7 +87,7 @@ trait UploadFiles
     }
 
     public function getFileUrl($file_name) {
-        return Storage::url("{$this->uploadDir()}/{$file_name}");
+        return Storage::url($this->relativeFilePath($file_name));
     }
     
 }

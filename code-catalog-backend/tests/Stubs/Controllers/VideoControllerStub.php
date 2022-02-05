@@ -4,6 +4,7 @@ namespace Tests\Stubs\Controllers;
 
 use App\Http\Controllers\Api\BasicCrudController;
 use Tests\Stubs\Models\VideoStub;
+use Tests\Stubs\Resources\VideoResourceStub;
 
 class VideoControllerStub extends BasicCrudController
 {
@@ -20,5 +21,14 @@ class VideoControllerStub extends BasicCrudController
         ];
     }
 
+    protected function resourceCollection()
+    {
+        return $this->resource();
+    }
+
+    protected function resource()
+    {
+        return VideoResourceStub::class;
+    }
 
 }

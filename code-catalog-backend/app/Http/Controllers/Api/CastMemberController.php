@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Resources\CastMemberResource;
 use App\Models\CastMember;
 use Illuminate\Validation\Rule;
 
@@ -19,5 +20,15 @@ class CastMemberController extends BasicCrudController
                 Rule::in(array_keys(CastMember::TYPES)),
             ]
         ];
+    }
+
+    protected function resourceCollection()
+    {
+        return $this->resource();
+    }
+
+    protected function resource()
+    {
+        return CastMemberResource::class;
     }
 }

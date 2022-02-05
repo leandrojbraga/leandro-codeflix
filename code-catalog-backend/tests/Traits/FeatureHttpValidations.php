@@ -7,11 +7,16 @@ use Illuminate\Support\Facades\Lang;
 
 trait FeatureHttpValidations
 {   
-    use UuidValidations, DatabaseValidations;
+    use UuidValidations, DatabaseValidations, RelationsSerializedFields;
 
+    
     protected $response;
 
+    protected $relations = [];
+
     protected abstract function model();
+
+    protected abstract function modelResource();
 
     protected abstract function setFactoryModel();
 
@@ -20,7 +25,6 @@ trait FeatureHttpValidations
     protected abstract function setRoute(string $routeSuffix, array $params = []);
 
     protected abstract function getRoute();
-
 
     public function sendRequest(string $method = "GET", $data = []) {
         $headers = ['Accept' => 'application/json'];
@@ -40,18 +44,64 @@ trait FeatureHttpValidations
         $this->response->assertStatus($statusCode);
     }
 
-    public function assertIndex()
+    public function assertModelResourceJson($model)
+    {
+        $resource = $this->modelResource();
+        if ($resource) {
+            $modelResponseArray = (new $resource($model))->response()->getData(true);
+            $this->response->assertJson($modelResponseArray);
+        }        
+    }
+
+    public function assertModelResourceCollectJson($modelArray)
+    {
+        $resource = $this->modelResource();
+        if ($resource) {
+            $modelResponseArray = $resource::collection(collect($modelArray))->response()->getData(true);
+            $this->response->assertJson($modelResponseArray);
+        }        
+    }
+
+    public function assertIndex($perPage = 15)
     {   
         $this->assertRequestAndStatusCode(Response::HTTP_OK);
-    
-        $this->response->assertJson([$this->getFactoryModel()->toArray()]);
+
+        if ($this->response->json('data')) {
+            $fieldStructure = [
+                'data' => [
+                    '*' => $this->getModelSerializedFields()
+                ],
+                'links' => [],
+                'meta' => []
+            ];
+            $this->response
+                ->assertJson([
+                    'meta' => ['per_page' => $perPage]
+                ])
+                ->assertJsonStructure($fieldStructure);
+
+        } else {
+            $this->response->assertJsonStructure(
+                $this->getModelSerializedFields()
+            );
+        }
+        
+        $this->assertModelResourceCollectJson(
+            [$this->getFactoryModel()]
+        );
     }
 
     public function assertShow()
     {   
         $this->assertRequestAndStatusCode(Response::HTTP_OK);
 
-        $this->response->assertJson($this->getFactoryModel()->toArray());
+        $this->response->assertJsonStructure(
+            $this->getModelResponseSerializedFields()
+        );
+
+        $this->assertModelResourceJson(
+            $this->getFactoryModel()
+        );
     }
 
     public function assertShowNotFound()
@@ -101,11 +151,17 @@ trait FeatureHttpValidations
     
     public function assertData($validadeData)
     {
-        $this->assertDatabaseData($validadeData);
+        $this->assertDatabaseData(
+            $validadeData + ['id' => $this->getRequestId()]
+        );
 
-        $this->response->assertJsonStructure([
-            'created_at', 'updated_at'
-        ]);
+        $this->response->assertJsonStructure(
+            $this->getModelResponseSerializedFields()
+        );
+
+        $this->assertModelResourceJson(
+            $this->model()::find($this->getRequestId())
+        );
     }
 
     public function assertStore($data, $validadeData)
@@ -146,7 +202,29 @@ trait FeatureHttpValidations
     }
 
     public function getRequestId() {
-        return $this->response->json('id');
+        return $this->response->json('id') ?? $this->response->json('data.id');
+    }
+
+    protected function getModelSerializedFields() {
+        $model = $this->model();
+        $class = new $model;
+
+        $fields = array_merge(
+            ['id'],
+            array_values($class->getFillable()),
+            array_values($class->getDates()),
+            $this->getRelationsSerializedFields($this->relations)
+        ); 
+
+        return $fields;
+    }
+
+    public function getModelResponseSerializedFields() {
+        if ($this->response->json('data')) {
+            return [ 'data' => $this->getModelSerializedFields() ];
+        }
+        
+        return $this->getModelSerializedFields();
     }
 
 }

@@ -124,21 +124,15 @@ class Video extends Model
     ];
 
     public function categories() {
-        return $this->belongsToMany(Category::class)
-            ->select(array('categories.id','categories.name'))
-            ->withTrashed();
+        return $this->belongsToMany(Category::class)->withTrashed();
     }
 
     public function genres() {
-        return $this->belongsToMany(Genre::class)
-            ->select(array('genres.id','genres.name'))
-            ->withTrashed();
+        return $this->belongsToMany(Genre::class)->withTrashed();
     }
 
     public function content_descriptors() {
-        return $this->belongsToMany(ContentDescriptor::class)
-            ->select(array('content_descriptors.id','content_descriptors.name'))
-            ->withTrashed();
+        return $this->belongsToMany(ContentDescriptor::class)->withTrashed();
     }
     
     protected function uploadDir()

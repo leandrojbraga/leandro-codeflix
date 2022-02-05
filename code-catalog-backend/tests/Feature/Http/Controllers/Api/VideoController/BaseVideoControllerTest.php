@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\Api\VideoController;
 
+use App\Http\Resources\VideoResource;
 use App\Models\Category;
 use App\Models\ContentDescriptor;
 use App\Models\Genre;
@@ -45,10 +46,16 @@ abstract class BaseVideoControllerTest extends TestCase
             'genres_id' => [$this->factoryGenre->id],
             'content_descriptors_id' => [$this->factoryContentDescriptor->id]
         ];
+
+        $this->relations = ['categories', 'genres', 'content_descriptors'];
     }
 
     protected function model() {
         return Video::class;
+    }
+
+    protected function modelResource() {
+        return VideoResource::class;
     }
 
     protected function setFactoryModel() {

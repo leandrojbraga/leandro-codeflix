@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Resources\ContentDescriptorResource;
 use App\Models\ContentDescriptor;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -25,6 +26,10 @@ class ContentDescriptorControllerTest extends TestCase
 
     protected function model() {
         return ContentDescriptor::class;
+    }
+
+    protected function modelResource() {
+        return ContentDescriptorResource::class;
     }
 
     protected function setFactoryModel() {

@@ -25,7 +25,7 @@ trait BasicCrudControllerValidations
 
         $this->assertEquals(
             [$model->toArray()],
-            $this->controller->index()->toArray()
+            $this->controller->index()->toArray(0)
         );
     }
 
@@ -55,7 +55,7 @@ trait BasicCrudControllerValidations
 
         $this->assertEquals(
             $this->getFindModelStubArray(1),
-            $obj->toArray()
+            $obj->toArray(0)
         );
     }
 
@@ -88,7 +88,7 @@ trait BasicCrudControllerValidations
 
         $this->assertEquals(
             $this->getFindModelStubArray($model->id),
-            $obj->toArray()
+            $obj->toArray(0)
         );
     }
 
