@@ -1,4 +1,4 @@
-FROM php:7.3.6-fpm-alpine3.9
+FROM php:7.3.33-fpm-alpine3.15
 
 RUN apk add --no-cache openssl \
             bash \
@@ -8,6 +8,9 @@ RUN apk add --no-cache openssl \
             freetype-dev \
             libjpeg-turbo-dev \
             libpng-dev
+
+RUN touch /root/.bashrc | echo "PS1='\w\$ '" >> /root/.bashrc
+
 RUN docker-php-ext-install pdo pdo_mysql
 RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
 RUN docker-php-ext-install -j$(nproc) gd
@@ -17,7 +20,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-COPY ./uploads.ini /usr/local/etc/php/conf.d/
+COPY ./backend/uploads.ini /usr/local/etc/php/conf.d/
 
 WORKDIR /var/www
 RUN rm -rf /var/www/html
