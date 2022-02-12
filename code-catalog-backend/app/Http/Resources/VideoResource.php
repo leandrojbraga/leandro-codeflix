@@ -14,14 +14,14 @@ class VideoResource extends JsonResource
      */
     public function toArray($request)
     {
-        $video = parent::toArray($request);
-        
-        $video['categories'] = CategoryResource::collection($this->categories);
-
-        $video['genres'] = GenreResource::collection($this->genres);
-
-        $video['content_descriptors'] = ContentDescriptorResource::collection($this->content_descriptors);
-
-        return $video;
+        return parent::toArray($request) + [
+            'categories' => CategoryResource::collection($this->categories),
+            'genres' => GenreResource::collection($this->genres),
+            'content_descriptors' => ContentDescriptorResource::collection($this->content_descriptors),
+            'trailer_file_url' => $this->trailer_file_url,
+            'movie_file_url' => $this->movie_file_url,
+            'thumbnail_file_url' => $this->thumbnail_file_url,
+            'banner_file_url' => $this->banner_file_url
+        ];
     }
 }
