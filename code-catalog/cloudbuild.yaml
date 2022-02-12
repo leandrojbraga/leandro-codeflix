@@ -5,15 +5,15 @@ steps:
         args:
             - kms
             - decrypt
-            - --ciphertext-file=./code-catalog-backend/storage/credentials/google/service-account-storage.json.enc
-            - --plaintext-file=./code-catalog-backend/storage/credentials/google/service-account-storage.json
+            - --ciphertext-file=./code-catalog/backend/storage/credentials/google/service-account-storage.json.enc
+            - --plaintext-file=./code-catalog/backend/storage/credentials/google/service-account-storage.json
             - --location=global
             - --keyring=lb-codeflix-storage
             - --key=service-account
 
     -   id: "rodando-docker-compose"
         name: 'gcr.io/$PROJECT_ID/docker-compose:1.28.2'
-        args: ['-f','code-catalog-backend/docker-compose.prod.yaml','up','-d']
+        args: ['-f','code-catalog/backend/docker-compose.prod.yaml','up','-d']
         env:
             - GOOGLE_CLOUD_PROJECT_ID=$PROJECT_ID
             - GOOGLE_CLOUD_KEY_FILE=service-account-storage.json
