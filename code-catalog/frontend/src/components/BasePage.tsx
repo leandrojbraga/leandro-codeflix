@@ -7,8 +7,7 @@ type BasePageProps = {
 const useStyles = makeStyles((theme: Theme) => ({
     title: {
         color: "#999999"
-    },
-    toolbar: theme.mixins.toolbar,
+    }
 }));
 
 export const BasePage:React.FC<BasePageProps> = (props) => {
@@ -16,7 +15,6 @@ export const BasePage:React.FC<BasePageProps> = (props) => {
 
     return (
         <div>
-            <div className={classes.toolbar} />
             <Box paddingTop={'20px'}>
                 <Container>
                     <Typography
