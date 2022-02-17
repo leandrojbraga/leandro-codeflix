@@ -6,7 +6,8 @@ type BasePageProps = {
 
 const useStyles = makeStyles((theme: Theme) => ({
     title: {
-        color: "#999999"
+        color: "#999999",
+        marginBottom: theme.spacing(2)
     }
 }));
 
@@ -15,11 +16,11 @@ export const BasePage:React.FC<BasePageProps> = (props) => {
 
     return (
         <div>
-            <Box paddingTop={'20px'}>
+            <Box paddingTop={2}>
                 <Container>
                     <Typography
                         component="h1"
-                        variant="h4"
+                        variant="h5"
                         className={classes.title}
                     >
                         {props.title}

@@ -8,6 +8,7 @@ import Location from 'history';
 import routes from '../routes';
 import RouteParser from 'route-parser';
 import { Container } from '@material-ui/core';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 const breadcrumbNameMap: { [key: string]: string } = {}
 routes.forEach(
@@ -19,8 +20,7 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: 20,
-      paddingLeft: theme.spacing(4),
+      paddingTop: theme.spacing(1.5)
     },
     toolbarSpace: theme.mixins.toolbar,
   }),
@@ -31,14 +31,17 @@ export default function Breadcrumbs() {
   const classes = useStyles();
 
   function makeBreadcrumb(location: Location) {
-    const pathnames = location.pathname.split('/').filter((x) => x);
-    pathnames.unshift('/');
+    const pathNames = location.pathname.split('/').filter((x) => x);
+    pathNames.unshift('/');
 
     return (
-        <MuiBreadcrumbs aria-label="breadcrumb">
-            {pathnames.map((value, index) => {
-            const last = index === pathnames.length - 1;
-            const to = `${pathnames.slice(0, index + 1).join('/').replace('//', '/')}`;
+        <MuiBreadcrumbs 
+            aria-label="breadcrumb"
+            separator={<ChevronRightIcon fontSize='small' />}
+        >
+            {pathNames.map((value, index) => {
+            const last = index === pathNames.length - 1;
+            const to = `${pathNames.slice(0, index + 1).join('/').replace('//', '/')}`;
             
             const route = Object.keys(
                 breadcrumbNameMap
@@ -49,11 +52,11 @@ export default function Breadcrumbs() {
 
             return last ? (
                 <Typography color="textPrimary" key={to}>
-                {breadcrumbNameMap[route]}
+                    {breadcrumbNameMap[route]}
                 </Typography>
             ) : (
-                <LinkRouter color="inherit" to={to} key={to}>
-                {breadcrumbNameMap[route]}
+                <LinkRouter to={to} key={to}>
+                    {breadcrumbNameMap[route]}
                 </LinkRouter>
             );
             })}

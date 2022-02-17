@@ -1,6 +1,11 @@
-import { BooleanField, DateField } from '../../components/Table';
+import { DateField } from '../../components/Table';
 import { MUIDataTableColumn } from 'mui-datatables';
 import BasePageList from '../../components/BasePageList';
+
+enum CastMemberType {
+    Diretor = 1,
+    Ator = 2
+}
 
 const columns: MUIDataTableColumn[] =[
     {
@@ -8,11 +13,11 @@ const columns: MUIDataTableColumn[] =[
         label:"Nome"
     },
     {
-        name:"is_active",
-        label:"Ativo?",
+        name:"type",
+        label:"Tipo",
         options: {
             customBodyRender(value, tableMeta, updateValue) {
-                return <BooleanField value={value as boolean}  />
+                return CastMemberType[value]
             }
         }
     },
@@ -30,8 +35,8 @@ const columns: MUIDataTableColumn[] =[
 const List = () => {
     return (
         <BasePageList
-            pageName="Categoria"
-            api="categories"
+            pageName="Elenco e equipe"
+            api="cast-members"
             columnsDefinition={columns}
         />
     );

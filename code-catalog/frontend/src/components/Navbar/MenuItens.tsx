@@ -1,7 +1,10 @@
 import * as React from 'react';
 
-import CategoryIcon from '@material-ui/icons/Category';
 import MovieFilterRoundedIcon from '@material-ui/icons/MovieFilterRounded';
+import CategoryIcon from '@material-ui/icons/Category';
+import TheatersIcon from '@material-ui/icons/Theaters';
+import PeopleAltIcon from '@material-ui/icons/PeopleAlt';
+import ExplicitIcon from '@material-ui/icons/Explicit';
 import { List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
 import routes, { AppRouteProps } from '../../routes';
 import { Link } from 'react-router-dom';
@@ -17,6 +20,15 @@ const menuItens: { [key: string]: ItemInfoMenu } = {
     },
     'categories.list': {
         icon: <CategoryIcon/>
+    },
+    'genres.list': {
+        icon: <TheatersIcon/>
+    },
+    'cast-members.list': {
+        icon: <PeopleAltIcon/>
+    },
+    'content-descriptors': {
+        icon: <ExplicitIcon/>
     }
 };
 

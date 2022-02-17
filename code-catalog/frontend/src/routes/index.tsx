@@ -1,6 +1,8 @@
 
 import { RouteProps } from "react-router-dom";
+import CastMemberList from "../pages/cast-members/List";
 import CategoryList from "../pages/categories/List";
+import ContentDescriptorList from "../pages/content-descriptors/List";
 import Dashboard from "../pages/Dashboard";
 import GenreList from "../pages/genres/List";
 
@@ -25,25 +27,25 @@ const routes: AppRouteProps[] = [
         component: CategoryList,
         exact: true
     },
-    // {
-    //     name: 'categories.create',
-    //     label: 'Nova',
-    //     path: '/categories/create',
-    //     component: CategoryList,
-    //     exact: true
-    // },
-    // {
-    //     name: 'categories.edit',
-    //     label: 'Edição',
-    //     path: '/categories/:id/edit',
-    //     component: CategoryList,
-    //     exact: true
-    // },
     {
         name: 'genres.list',
         label: 'Gêneros',
         path: '/genres',
         component: GenreList,
+        exact: true
+    },
+    {
+        name: 'cast-members.list',
+        label: 'Elenco e equipe',
+        path: '/cast-members',
+        component: CastMemberList,
+        exact: true
+    },
+    {
+        name: 'content-descriptors',
+        label: 'Classificação de conteúdo',
+        path: '/content-descriptors',
+        component: ContentDescriptorList,
         exact: true
     }
 ];

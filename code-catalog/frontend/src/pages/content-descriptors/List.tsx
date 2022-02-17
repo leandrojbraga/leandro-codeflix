@@ -1,4 +1,4 @@
-import { BooleanField, DateField } from '../../components/Table';
+import { DateField } from '../../components/Table';
 import { MUIDataTableColumn } from 'mui-datatables';
 import BasePageList from '../../components/BasePageList';
 
@@ -6,15 +6,6 @@ const columns: MUIDataTableColumn[] =[
     {
         name:"name",
         label:"Nome"
-    },
-    {
-        name:"is_active",
-        label:"Ativo?",
-        options: {
-            customBodyRender(value, tableMeta, updateValue) {
-                return <BooleanField value={value as boolean}  />
-            }
-        }
     },
     {
         name:"created_at",
@@ -30,8 +21,8 @@ const columns: MUIDataTableColumn[] =[
 const List = () => {
     return (
         <BasePageList
-            pageName="Categoria"
-            api="categories"
+            pageName="Classificação de conteúdo"
+            api="content-descriptors"
             columnsDefinition={columns}
         />
     );

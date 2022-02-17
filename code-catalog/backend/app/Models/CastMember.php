@@ -16,7 +16,7 @@ class CastMember extends Model
     
     const TYPES = [
         self::TYPE_DIRECTOR => 'Diretor',
-        self::TYPE_ACTOR => 'Actor'
+        self::TYPE_ACTOR => 'Ator'
     ];
 
     public $incrementing = false;
@@ -28,12 +28,12 @@ class CastMember extends Model
         'type' => 'string'
     ];
 
-    public function getTypeAttribute()
-    {
-        return self::TYPES[$this->attributes['type']];
-    }
-    public function setTypeAttribute($type)
-    {
-        $this->attributes['type'] = $type;
-    }
+    // public function getTypeAttribute()
+    // {
+    //     return self::TYPES[$this->attributes['type']];
+    // }
+    // public function setTypeAttribute($type)
+    // {
+    //     $this->attributes['type'] = $type;
+    // }
 }
